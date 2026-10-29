@@ -1,70 +1,100 @@
 # Heads and faces
 
-Heads fail at sprite scale in three ways: features on the wrong lines (eyes too high, mouth
-glued to the chin), a flat front-on mask where a turned head was wanted, and features drawn
-before the shape that holds them. This file fixes the geometry — where each feature sits at
-8, 12, 16, 24 and 32 px in front, 3/4 and side view. Eyes, brows and emotion:
-`rules://33-eyes-and-expressions`. Bust portraits from 48 px: `rules://38-portraits`. Head
-size against the body: `rules://30-proportions-by-size`.
+Heads fail at sprite scale in three ways: a flat cranium (an egg with features stuck on), eyes
+laid on the surface instead of sunk under the brow, and a turned head drawn as a front head with
+its features slid sideways. All three come from placing features by percentages on a flat
+outline. From 32 px a head is **built as volumes and planes, then turned**: an ovoid cranium, a
+wedge-shaped facial block hung under its front, simplified planes on both, eyeballs in sockets,
+a hair shell and a neck. `draw` op `headArmature` does the 3D for you; this file says how to use
+it and what the pixels must keep. Under 28 px a head is pixel placement: the tables and
+templates below. Eyes, brows and emotion: `rules://33-eyes-and-expressions`. Bust portraits:
+`rules://38-portraits`. Head size against the body: `rules://30-proportions-by-size`.
 
 ## Rules
 
-1. **Shape before features.** Block one filled egg or rounded square, then a centre axis and
-   the eye line (guide layer, deleted last), then features, hair, shade, outline. Features
-   placed first float.
-2. **H = hair top to chin, outline included.** All landmarks are fractions of H from row 0.
-3. **Eye line at 50–56% of H** for game heads (templates: 12 px 50%, 16 px 56%, 24/32 px
-   52–53%); 56–65% for cute heads — low eyes under a high forehead is the baby cue. Realistic
-   8-head faces sit at 50%. Sources counting from the hairline (Loomis quarters, st0ven)
-   land 3–4% lower; we count from the hair top because that is what the grid shows.
-4. **Front landmarks (derived by fitting the Loomis/Hampton/Slynyrd divisions to the grid):**
-   hairline 25–33%, brow 38–42%, nose base halfway from brow to chin (63–74%), mouth 77–83%
-   (about a third of the way from nose base to chin), chin 100%. Rows are in the table.
-5. **Width.** Realistic W ≈ 0.7–0.75 H (Loomis' drawings; an estimate, not a printed figure);
-   3–4-head game figures 0.85–0.9 H (the templates are 0.86–0.88); chibi 1.0. Side depth ≈ H
-   plus the nose.
-6. **Odd or even width, decided first.** Odd (11, 21, 27) has a centre column: 1-px nose,
-   1- or 3-px mouth. Even (8, 14) has none: 2-px mouth, no nose. Never a 1-px feature on an
-   even head or a 2-px feature on an odd one.
-7. **Features never touch.** ≥1 px skin between mouth and nose/chin, brow and eye, eye and
-   contour; ≥2 px between the eyes (1 px fuses them into a brow). Spacing is letter-spacing.
-8. **Eye gap 1–2 eye widths** for adults, ≤1 eye width for cute faces *with enlarged eyes*.
-   Blair and Saint11 both want wide-set cute eyes but Saint11's ratios shrink the gap; both
-   hold when the eye grows and the absolute gap stays ≥2 px.
-9. **Nose.** None at ≤16 px (blush instead). 24 px: 1 px one skin step darker. ≥32 px: bridge
-   shade on the shadow side plus 2–3 px at the base. Never outline-dark (reads as a smudge).
-   In profile it is the silhouette bump: +1 px at 12–16, +2 at 24, +3 at 32.
-10. **Mouth.** Width ≈ distance between pupils, two thirds of that if cute: 2 px at 16, 3–4 at
-    24, 5–9 at 32. Seam darkest, lower lip lighter, no separate upper lip below 24 px.
-11. **Ears.** Front: top at the brow line, bottom at the nose base, height ≈ nose length. ≤16 px
-    hide under hair; 24 px a 1-px bump; 32 px 2 wide × 4–5 tall. Side: just behind the
-    vertical midline, lower-back quarter of the side plane.
-12. **3/4 view.** Axis moves 1–2 px toward the turn at 16 px, 2–3 at 32. Far eye one notch
-    narrower (16 px 2→1, 24 px 3→2, 32 px 5→3), ≥1 px off the far contour. Far cheek in 1–2 px;
-    the nose breaks the far contour; near ear shows, far ear hides; chin shifts toward the
-    turn. Equal eyes in a turned head is the tell. At ≤12 px a 1-px eye cannot narrow: shift
-    nose and mouth, break the contour, show the near ear.
-13. **Tilt.** Head up bows the eye line up in the middle; down bows it down. Move the whole
-    eye+nose+mouth block 1 row (2 at 32) and bend the mouth 1 px. Never nudge single features.
-14. **A profile needs a profile:** forehead out, eye in, nose out, lips, chin — ≥3 bumps on the
-    front contour. The eye is a wedge 1–3 px behind the contour. A straight front edge is the
-    weakest silhouette (Bancroft).
-15. **Hair is the face at ≤16 px.** ≥2 px of hair at the sides, hairline 1–2 px above the eyes,
-    hair split from skin by colour, never one black line across the forehead
-    (`rules://35-hair-and-clothing`).
-16. **Skin: three tones** — base, light (forehead, cheek apple), shadow turned 10–22° toward
-    red and cooler, 15–25% darker; shadow away from the light, under the hair edge and chin
-    (`rules://20-color-for-pixel-art`). Face contrast below the rest of the sprite so it stays
-    one unit; eyes the highest contrast on the head. A mirrored head flips its light: re-shade.
-17. **When pixels run out cut:** ears → nose → brow → mouth → jaw shape → hair silhouette. Eyes
-    and hair are never cut.
-18. **Shape is character.** Square jaw = jaw width held near skull width to the chin; pointed =
-    taper from mid-height; round = the templates. Younger = lower eyes, bigger cranium,
-    smaller nose; older = eyes a notch higher, bigger nose and ears (`rules://36-character-design`).
+1. **Volume before features.** Cranium, facial block, planes, then features — never a filled
+   outline with features placed on it. From 28 px start with `draw` op `headArmature` on a guide
+   layer; below that block one filled egg or rounded square and read rows off the table.
+2. **The cranium is an ovoid seen whole.** It is wider at the back than the face, its top is
+   one curve, and in 3/4 and profile the back of the skull stays visible behind the ear. A
+   cranium cut off flat behind the ear is the commonest tell.
+3. **The face is a wedge hung under the front of the cranium** (Bridgman, Vilppu): brow ridge
+   across the top, cheekbones at the widest point, a tapered jaw down to the chin box. Its
+   front/side break runs temple → cheekbone → jaw corner; that line, not the outline, says
+   which way the head turns.
+4. **Planes are value clusters.** One plane = one flat value = one cluster of pixels (Asaro's
+   simplified head). Use the level the size affords: ≥80 px nine planes (forehead, side of
+   cranium, orbit, nose, front cheek, side cheek, muzzle, chin box, underside of jaw); 40–79 px
+   six plus the underside (forehead, side, orbit, nose, cheek, jaw); 28–39 px three plus the
+   orbit (face, side, orbit). More planes than that turn into noise; fewer flatten the head.
+5. **Eyes sit in the orbit, under the brow.** The orbit is a hollow: the brow ridge overhangs
+   the upper lid and casts the darkest value on the face. Realistic and adventure eyes are
+   spheres — the lids wrap them, and in a turn the far eye foreshortens against the far
+   contour. Anime and chibi eyes are flat decals laid on the face plane: they turn with the
+   face but keep their drawn shape.
+6. **Feature lines wrap the volume.** Brow, eye, nose-base and mouth lines are contours on the
+   surface, not horizontals: in a turn they curve around the facial block; seen from below
+   (pitch up) they bow upward in the middle, from above they bow down. A straight eye line on a
+   tilted head flattens it.
+7. **Turning is a rotation, not a slide.** In a turn the axis moves toward the turn and
+   curves, the far eye narrows then hides behind the nose and brow (yaw ≈ 70–80°), the near
+   cheek and side plane widen, the far ear disappears, the near ear moves toward the centre of
+   the side plane. Use `yaw`/`pitch`/`roll` on the armature rather than editing a front head.
+8. **Hair is a shell, not a helmet.** It is the cranium grown 1–3 px, with the hairline wrapped
+   over the forehead (high at the temples, lowest at the centre). It stops at the ears and
+   never wraps the jaw. Draw it over the cranium, not instead of it.
+9. **The neck goes under the cranium, behind the jaw** — a cylinder inserted under the skull,
+   leaning forward, its front starting under the chin, its back at the nape well above the
+   chin line. A neck hung from the chin is a puppet's.
+10. **Character comes from the volumes.** Jaw width, face length, brow ridge, cheekbones, chin
+    and age are the `sliders`: square jaw = jaw held near cranium width; long face = lower
+    chin; strong brow = deeper orbit; young = big cranium, eyes low, small face; old = eyes a
+    notch higher, heavier nose and ears (`rules://36-character-design`).
+11. **Rhythms for tension (Reilly).** The armature returns 3–4 rhythm curves (brow → nose,
+    cheekbone → chin, cranium → nape, jaw → neck). Use them when the contour goes soft or
+    statue-stiff: push the outline along them by 1 px. They are never drawn.
+12. **Proportions are an outcome, not a recipe.** On a front adventure head the eye line falls
+    at 50–56% of hair top to chin, brow 38–42%, nose base 63–74%, mouth 77–83%, cute heads
+    56–65%. Check these on a front view; on turned or tilted heads trust the armature.
+13. **Features never touch.** ≥1 px skin between mouth and nose/chin, brow and eye, eye and
+    contour; ≥2 px between the eyes. Odd width has a centre column (1-px nose, 1- or 3-px
+    mouth); even width has none.
+14. **Nose.** None at ≤16 px. 24 px: 1 px one skin step darker. ≥32 px: it is a wedge — the
+    lit flank, the shadow flank and the base plane, never an outline-dark mark. In profile it
+    is the silhouette bump.
+15. **A profile needs a profile:** forehead out, eye in, nose out, lips, chin — ≥3 bumps on the
+    front contour; the eye is a wedge 1–3 px behind it; the back of the cranium extends well
+    behind the ear (Bancroft).
+16. **Skin: values from planes, hue from temperature.** Plane values come from the light; hue
+    shift the shadows 10–22° toward red and cooler, 15–25% darker
+    (`rules://20-color-for-pixel-art`). Eyes the highest contrast on the head. A mirrored head
+    flips its light: re-shade.
+17. **When pixels run out cut:** ears → nose → brow → mouth → jaw planes → hair silhouette. Eyes
+    and the cranium shape are never cut.
+
+## Construction with `headArmature`
+
+- `rect` is the head box, hair shell included, neck excluded; its height chooses the plane
+  level. Under 28 px the op refuses with `too_small` and points here.
+- `archetype`: `realistic` (narrow cranium, long face, small eyes), `adventure` (game default,
+  slightly bigger cranium and eyes), `anime` (big cranium, short face, decal eyes), `chibi`
+  (cranium ≈ 2/3 of the head, decal eyes). Then `sliders`, each −1…1.
+- `yaw` positive turns the face toward the viewer's right; `pitch` positive raises it (seen
+  from below); `roll` positive tilts clockwise. Three-quarter is yaw ±30–40°.
+- Output: the guide (silhouette, curved axis, wrapped feature lines, plane borders, eyeballs
+  and lids, ears, hair shell, hairline, neck) on `guideLayer`, and with `planes` the lit
+  block-in on its own layer, in one undo step. The JSON returns every landmark in canvas
+  pixels: `landmarks` (brow, eyeLine, noseBase, mouth, chin, hairline), `eyes` (centre,
+  footprint, lids, brow overhang, visible, near), `planes` (type, side, value, colour, area,
+  bounds), `ears`, `hairShell`, `neck`, `rhythm`.
+- Guide colours default to the two palette entries furthest from the skin ramp; pass
+  `guideColor`/`featureColor` when the palette has none.
+- The guide is a construction, not line art: paint over it on its own layer, then hide or
+  delete it.
 
 ## By size
 
-Rows count from 0 at the top (outline row); x from 0 at the template's left edge. Front:
+Under 28 px (and as feature-size references up to 32 px). Rows count from 0 at the top (outline row); x from 0 at the template's left edge. Front:
 
 | | 8 px | 12 px | 16 px | 24 px | 32 px |
 |---|---|---|---|---|---|
@@ -87,10 +117,283 @@ Rows count from 0 at the top (outline row); x from 0 at the template's left edge
 | Side nose tip, mouth | +1 row 7; x 7–8 row 8 | +1 row 10; x 11–12 row 12 | +2 rows 14–16; x 17–20 row 18 | nose +3 rows 19–22; mouth x 27–30 rows 24–25 |
 | Side ear | 2×2 x 4–5 | 2×3 x 5–6 | 4×5 x 8–11 | 5×6 x 13–17, rows 14–19 |
 
-At 48–64 px use the 32 px recipe with eyes ≥7 px wide and planes in the cheeks. Below 8 px
-there is no face: two dark pixels or one shadow row.
+From 28 px build with `headArmature` instead; the 32 px columns stay as finished-feature sizes
+(eye, mouth, nose) to paint into the armature's footprints. Below 8 px there is no face: two
+dark pixels or one shadow row.
 
 ## Templates
+
+### Armature block-ins (32 and 48 px)
+
+Generated by `headArmature` (`scripts/armature-templates.ts`, checked by `tests/rules.test.ts`):
+plane values only, no hair or neck, ramp darkest `1` to lightest `5`. Map the ramp onto your
+own skin ramp; they show what each turn must look like before any feature.
+
+32 px, `adventure`, front (level 3: face, side, orbit). Light upper-left; `E` marks the eyeball under the brow.
+
+```grid armature-32-front
+2 = skin-shadow #7a4040
+4 = skin-light #e0a07a
+5 = skin-highlight #f6d2b0
+E = eye-socket #2b1d2e
+---
+.........555555.........
+.......5555555555.......
+......555555555555......
+.....55554444445555.....
+....5554444444444255....
+....5544444444444422....
+...555444444444444222...
+...554444444444444422...
+..55444444444444444422..
+..54444444444444444442..
+..54444444444444444442..
+..54444444444444444442..
+..54444444444444444442..
+..54444444444444444442..
+..54444444444444444442..
+..54454444444444422442..
+4.5555EEEE4444EEEE2222.2
+4.5555EEEE5522EEEE2222.2
+4.55555445552222222222.2
+.4.555555555222222222.2.
+.4.555555555222222222.2.
+..45555555552222222222..
+...555555555222222222...
+....5555544444422222....
+....5555544444422222....
+....5555544444422222....
+....5555544444422222....
+.....55555444422222.....
+......555544442222......
+.......5554444222.......
+........45444424........
+..........4444..........
+```
+
+32 px, `adventure`, yaw −35° (turned toward the light). The far eye is narrower and sits against the far contour; the near cheek and side plane carry the turn.
+
+```grid armature-32-tq
+2 = skin-shadow #7a4040
+3 = skin #b8705a
+4 = skin-light #e0a07a
+5 = skin-highlight #f6d2b0
+E = eye-socket #2b1d2e
+---
+.........444444.........
+......44444444444.......
+.....44444444444444.....
+....4555554444444444....
+...55555555224444444....
+..5555555555222222222...
+..55555555552222222222..
+.555555555555222222222..
+.5555555555555222222222.
+.5555555555555522222222.
+.5555555555555522222222.
+55555555555555522222222.
+55555555555555522222222.
+55555555555555522222222.
+55555555555555522222222.
+45555555553255522222222.
+4EE5555EEEE2222222222222
+.EEE333EEEE2222222222222
+.54533333332222222222222
+.5553333332222222222222.
+.5533333333222222222222.
+..53333333322222222222..
+..5333333332222222222...
+..55555333322222222.....
+..55555333332222222.....
+..55555333332222222.....
+...555533333222222......
+...55553333322222.......
+...555533333322.........
+...5555333333...........
+....5553355.............
+.....5555...............
+```
+
+48 px, `adventure`, front (level 6: forehead, side, orbit, nose, cheek, jaw + underside). Ears sit between brow and nose base.
+
+```grid armature-48-front
+1 = skin-deep #3b2027
+2 = skin-shadow #7a4040
+3 = skin #b8705a
+4 = skin-light #e0a07a
+5 = skin-highlight #f6d2b0
+E = eye-socket #2b1d2e
+---
+................444444................
+.............444444444444.............
+...........4444444444444444...........
+..........444444444444444444..........
+.........44444444444444444444.........
+........4444444444444444444444........
+.......444554444444444444422444.......
+.......555444444444444444444222.......
+......55554444444444444444442222......
+......55554444444444444444442222......
+.....5554444444444444444444444222.....
+.....5554444444444444444444444222.....
+....555544444444444444444444442222....
+....554444444444444444444444444422....
+....554444444444444444444444444422....
+....554444444444444444444444444422....
+....554444444444444444444444444422....
+...55544444444444444444444444444222...
+...55544444444444444444444444444222...
+...55544444444444444444444444444222...
+...55544444444444444444444444444222...
+...55544444444444444444444444444222...
+...55544444443444444444414444444222...
+4...555543333334444444411111122222...2
+44..5444443EEEEE444444EEEEE1222222..22
+.4..544444EEEEEE455224EEEEEE222222..2.
+.44.5444443EEEEE555222EEEEE1222222.22.
+.44.544444533335555222211112222222.22.
+.44..4444455555555522222222222222..22.
+..44.4444455555555522222222222222.22..
+...4..44445555555552222222222222..2...
+....4.44445555555552222222222222.2....
+....444444455555555222222222222222....
+.....4444445555555522222222222222.....
+......44444555555552222222222222......
+......44444555555552222222222222......
+.......444455555555222222222222.......
+.......444455555555222222222222.......
+.......444455555555222222222222.......
+.......444455555555222222222222.......
+........4445555444522222222222........
+.........44555544442222222222.........
+..........455554444222222222..........
+...........5555544422222222...........
+...........5555544422222222...........
+.............455444222222.............
+..............4444422222..............
+................444222................
+```
+
+48 px, `adventure`, yaw −35°. The nose wedge breaks the far contour; the front/side break runs down the near temple, cheekbone and jaw corner.
+
+```grid armature-48-tq
+2 = skin-shadow #7a4040
+3 = skin #b8705a
+4 = skin-light #e0a07a
+5 = skin-highlight #f6d2b0
+E = eye-socket #2b1d2e
+---
+..............4444444...............
+...........4444444444444............
+.........44444444444444444..........
+........4444444444444444444.........
+.......4444444444444444444444.......
+......455555554444444444444444......
+.....5555555555552224444444444......
+....555555555555552222222222222.....
+....5555555555555522222222222222....
+...55555555555555522222222222222....
+..5555555555555555552222222222222...
+..5555555555555555552222222222222...
+..55555555555555555522222222222222..
+.555555555555555555555222222222222..
+.555555555555555555555222222222222..
+.5555555555555555555552222222222222.
+.5555555555555555555552222222222222.
+.5555555555555555555552222222222222.
+55555555555555555555552222222222222.
+55555555555555555555552222222222222.
+55555555555555555555552222222222222.
+55555555555555555555552222222222222.
+.5355555552255555555552222222222222.
+33335555552222222222222222222222222.
+.3EE5555552EEEE22222222222222222222.
+.EEE3554252EEEEE2222222222222222222.
+.EEEE544332EEEE222222222222222222222
+.53355443333222322222222222222222222
+.55555443333333322222222222222222222
+..555444433333332222222222222222222.
+..55544443333333222222222222222222..
+..5554444333333322222222222222222...
+..555444433333332222222222222222....
+...55444433333333222222222222222....
+...554443333333332222222222222......
+...55533333333333222222222222.......
+...55533333333333222222222222.......
+....5533333333333322222222222.......
+....5533333333333322222222222.......
+....553333333333332222222222........
+....5433222333333322222222..........
+....54222223333333322222............
+.....442222333333332222.............
+.....4422223333333322...............
+.....44222233333333.................
+.....544222333222...................
+......442222222.....................
+.......44222........................
+```
+
+48 px, `realistic`, yaw −30°, pitch 20° (seen from below). The feature lines bow upward and the underside of the jaw shows as its own dark plane.
+
+```grid armature-48-tq-up
+1 = skin-deep #3b2027
+2 = skin-shadow #7a4040
+3 = skin #b8705a
+4 = skin-light #e0a07a
+5 = skin-highlight #f6d2b0
+E = eye-socket #2b1d2e
+---
+.............44444444.................
+...........5555555444444..............
+.........55555555552224444............
+........5555555555555224444...........
+.......5555555555555552222444.........
+......555555555555555522222224........
+.....55555555555555555522222224.......
+....555555555555555555552222222.......
+....5555555555555555555522222222......
+...555555555555555555555522222222.....
+...555555555555555555555522222222.....
+..55555555555555555555555222222222....
+..55555555555555555555555222222222....
+..555555555555555555555552222222222...
+.5555555555555555555555552222222222...
+.55555555555555555555555522222222222..
+.55555555555533333355555522222222222..
+.55555555555333333333355522222222222..
+.5335555555533EEE3333333322222222222..
+.333355555553EEEEE333333333222222222..
+3333EE5533253EEEEE333333333322222222..
+433EEEE433444EEE33333333333332222222..
+43EEEEE3334444333443333333333332222222
+43EEEEE3334444434443333333333333222222
+43333533334444444443333333333333322222
+45535533334444444443333333333333322222
+.4555533333444444443333333333333322222
+.4555333333444444443333333333333222222
+.4555433333444444444333333333333222222
+.455543333344444444433333333333322222.
+.44555433444444444443333333333332222..
+..455554444444444444333333333333222...
+..45555444444444444433333333333322....
+...5555544444444444433333333333322....
+...555554444444444444333333333332.....
+....5555444444444444433333333333......
+....5555444444444444433333333333......
+....5555433334444444433333333333......
+....5544333334444444433333333333......
+.....544333334444444443333333333......
+.....544433334444444443333333333......
+.....5444333344444444433333331........
+.....544433334444444443333111.........
+......4443333444444444331111..........
+......44443333333333311111............
+......444433333333111111..............
+......444433333111111.................
+.......44441111111....................
+```
+
+### Finished heads (8–32 px)
 
 Lit from the upper left; hair is a short cap so hairline and brow rows stay visible — swap
 the hair, keep the rows. Each strip holds self-contained heads side by side.
@@ -356,51 +659,65 @@ OHHHHHHSeOOeSSSSWwESSO.....OHHHHHHHHHHHHSSSSSSSkkkkkkkSSO...
 
 ## Procedure
 
-1. `sprite_info`; fix H from the heads-tall plan and pick odd/even width (rule 6).
-2. `layer` op `create` "guide"; `draw` op `line` the centre axis and one row per landmark from
-   the table. At ≤12 px skip the guide and read rows off the table.
-3. On a "head" layer block the silhouette in one flat skin colour (`draw` op `grid` from the
-   nearest template, or `draw` op `ellipse` and trim). `look` op `preview` at 1×: it must read
-   as a head already (`rules://03-silhouette-and-form`).
-4. Eyes on the eye line, then mouth, brows, nose, ears (rule 17). `look` op `ascii` with a
-   `region` to check rows, gaps, parity.
-5. Hair on its own layer; hairline 1–2 px above the eyes.
-6. Three skin tones: `palette` op `ramp` from the base; light top-left, shadow right, under
-   hair and chin (`rules://02-shading-and-light`). Outline the silhouette only
-   (`rules://04-outlines-and-edges`).
-7. Turns: start from the matching 3/4 or side template; for the opposite facing `transform`
-   op `flip` on a copied layer, then re-shade (`rules://37-views-and-directions`).
-8. Delete the guide; `look` op `preview`, then `validate`.
+1. `sprite_info`; fix H from the heads-tall plan (`rules://30-proportions-by-size`) and the
+   facing. Under 28 px skip to step 8.
+2. `palette` op `ramp` for skin (4–5 steps for 48 px and up, 3 at 32 px).
+3. `draw` op `headArmature` with `rect`, `archetype`, `yaw`/`pitch`/`roll`, `sliders` and
+   `planes: { ramp, light }`. Read the returned landmarks; `look` op `preview` at 1×: the block-in
+   alone must read as a turned head (`rules://03-silhouette-and-form`). Wrong turn or shape:
+   undo and change the parameters — never fix a cranium by pushing pixels.
+4. On a new "head" layer over the block-in, merge planes that read as noise and smooth the
+   outline along the rhythm curves; keep the front/side break, the orbit shadow and the
+   underside of the jaw.
+5. Eyes into the returned `eyes` footprints (lids from `upperLid`/`lowerLid`, brow over
+   `browOverhang`; far eye only if `visible`), then mouth on the `mouth` line, nose on its
+   planes, ears from `ears` (`rules://33-eyes-and-expressions`). `look` op `ascii` with a
+   `region` to check gaps and parity.
+6. Hair on its own layer inside `hairShell`, hairline on `landmarks.hairline`
+   (`rules://35-hair-and-clothing`); neck on `neck`.
+7. Shade with hue shifts, outline the silhouette only (`rules://04-outlines-and-edges`), hide
+   the guide; `look` op `preview`, then `validate`.
+8. Under 28 px: block one filled egg or the nearest template (`draw` op `grid`), features from
+   the table, turns from the 3/4 and side templates; for the opposite facing `transform` op
+   `flip` a copy and re-shade (`rules://37-views-and-directions`).
 
 ## Mistakes
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Old, alien, "all forehead" | Eye line above 50% | Eyes to 52–56% |
-| Eyes read as one thick brow | 1 px between eyes, or brow touching | ≥2 px gap; 1 px under the brow |
-| Mouth glued to chin or nose | Mouth below 83%, no skin row | Mouth at 77–83%, skin both sides |
-| 3/4 head = front head plus a nose | Equal eyes, axis not moved | Narrow the far eye, shift the axis |
-| Profile is a blank egg | Straight front edge | Nose bump, brow step, lip and chin steps |
-| Black line across forehead | Outline between hair and skin | Split by colour |
-| Plastic skin | One saturated tone, luminance-only shadow | Shadow toward red/cool, 15–25% darker |
+| Head reads as an egg with a face printed on | Features placed on a flat outline | Rebuild from `headArmature`; planes before features |
+| Flat back of the head in 3/4 or profile | Cranium cut behind the ear | The ovoid stays whole; back of skull past the ear |
+| Eyes look pasted on | No orbit, brow not overhanging | Orbit shadow under the brow; lids wrap the eye |
+| 3/4 head = front head plus a nose | Features slid, eyes equal | Turn the armature (`yaw`); far eye narrows |
+| Tilted head looks like a level one | Straight feature lines | Bow the lines (pitch); show the jaw underside |
+| Helmet hair | Hair drawn instead of the cranium | Shell 1–3 px off the cranium, hairline wrapped |
+| Puppet neck | Neck hung from the chin | Cylinder under the skull, nape above the chin |
+| Noisy face | More planes than the size affords | Use the level for the height; merge planes |
+| Soft, statue-like contour | No rhythm | Push the outline 1 px along the rhythm curves |
+| Old, alien, "all forehead" (front) | Eye line above 50% | Lower the eyes or use `age` < 0 |
 | Wrong light after a flip | Mirrored copy kept its shading | Re-shade |
-| Face wobbles in animation | Features moved by sub-pixels | Move the whole head by whole pixels |
 
 ## Review
 
-- Eye line within 50–56% of head height (≤65% only on deliberately cute heads).
-- ≥2 px between eyes; ≥1 px eye–contour, brow–eye, mouth–nose, mouth–chin.
-- Parity respected; nose absent at ≤16 px and never outline-dark.
-- ≤16 px: ≥2 px of hair at the sides, hairline above eyes, no outline on it.
-- 3/4: unequal eyes, far cheek pulled in, nose breaks the contour, one ear.
-- Profile: ≥3 bumps on the front contour; nose bump matches the table.
-- Three skin tones, one light side; eyes the highest contrast on the head.
+- ≥ 28 px: the head was built from `headArmature` (a guide or plane layer exists, or the
+  block-in matches one); the block-in alone reads as a turned head at 1×.
+- The cranium is one ovoid; in 3/4 and profile the back of the skull shows behind the ear.
+- A visible front/side break; the orbit is the darkest skin value; brow overhangs the lids.
+- Feature lines curve with the turn and the pitch; far eye narrower in a turn.
+- Hair shell 1–3 px off the cranium, stops at the ears; neck under the skull, not the chin.
+- Plane count fits the size; one light direction; eyes the highest contrast on the head.
+- Front view landmarks inside the ranges in rule 12; ≥2 px between eyes; parity respected.
 - One deliberate asymmetry on an otherwise symmetric face.
 
 ## Sources
 
-- Loomis, *Figure Drawing for All It's Worth* — head construction and features sheet, pp. 171–177.
-- Hampton, *Figure Drawing: Design and Invention* — nine-step head, pp. 57–82.
+- Bridgman, *Constructive Anatomy* — the head as cranium and wedge, planes of the face.
+- Vilppu, *The Vilppu Drawing Manual* — head construction from the ball and the facial
+  wedge, rotation.
+- Asaro, "Planes of the Head" (simplified planar head) — plane sets used at each level.
+- Frank Reilly, as taught in Jack Faragasso, *Mastering Drawing the Human Figure* — head
+  rhythms (used as an outline pass only).
+- Hampton, *Figure Drawing: Design and Invention* — head as volumes, pp. 57–82.
 - Bancroft, *Creating Characters with Personality* — view line-up pp. 55–57, 3/4 p. 135.
 - Blair, *Advanced Animation* — Construction of the Head; the cute head, p. 15.
 - Solarski, *Drawing Basics and Video Game Art* — Massing the Head.
@@ -408,3 +725,5 @@ OHHHHHHSeOOeSSSSWwESSO.....OHHHHHHHHHHHHSSSSSSSkkkkkkkSSO...
 - *Pixel Logic* — spacing p. 106, hair p. 108, faces pp. 168–169, no sub-pixel faces p. 205.
 - Saint11 "Portrait"/"Cuteness"; Slynyrd Pixelblog 17 and 29; st0ven fighter faces (2006);
   Tsu tutorials 7–9; art-pia small-canvas guide; Derek Yu's pixel art tutorial.
+- Small-head landmark rows were first derived by fitting the Loomis/Hampton/Slynyrd divisions
+  to the grid; they are kept for heads under 28 px, where there is no volume to build.
