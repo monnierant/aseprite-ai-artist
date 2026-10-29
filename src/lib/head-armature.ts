@@ -38,6 +38,12 @@ export interface ArmatureInput {
   neck?: boolean;
   light?: LightPreset | Vector3;
   ramp?: readonly string[];
+  /**
+   * "planes": every plane gets its own step — the construction study.
+   * "masses": planes are grouped into light, half-tone and shadow masses and
+   * cavities join the shadow — the start of a finished skin. Default "planes".
+   */
+  values?: "planes" | "masses";
 }
 
 export interface ArmatureEye {
@@ -619,6 +625,18 @@ function cleanPlaneValues(values: Map<number, number>, minArea: number, key: (x:
   return out;
 }
 
+/**
+ * Three masses instead of one step per plane: a finished pixel face holds
+ * light, half-tone and shadow, with the darkest and lightest steps left for
+ * accents. Faceted plane steps left in the final skin read as a mask.
+ */
+function massIndex(stretched: number, steps: number): number {
+  const at = (t: number) => clamp(Math.round(t * (steps - 1)), 0, steps - 1);
+  if (stretched >= 0.62) return at(0.75);
+  if (stretched >= 0.3) return at(0.5);
+  return at(0.25);
+}
+
 /** Outline plus interior of a closed pixel polygon (even-odd scanline fill). */
 function fillPolygon(outline: readonly Point[]): Point[] {
   const ring = dedupe(outline);
@@ -828,8 +846,11 @@ export function buildHeadArmature(input: ArmatureInput): ArmatureResult {
     const stretched = vMax - vMin > 1e-6 ? (value - vMin) / (vMax - vMin) : value;
     // Lit planes share the upper steps; the darkest step is kept for the
     // occluded planes (orbit, underside of the jaw), which read as cavities.
-    const floor = OCCLUSION[a.type] !== undefined && a.type !== "ear" ? 0 : 0.3;
-    const rampIndex = clamp(Math.round((floor + (1 - floor) * stretched) * (steps - 1)), 0, steps - 1);
+    const occluded = OCCLUSION[a.type] !== undefined && a.type !== "ear";
+    const floor = occluded ? 0 : 0.3;
+    const rampIndex = input.values === "masses"
+      ? massIndex(occluded ? 0 : stretched, steps)
+      : clamp(Math.round((floor + (1 - floor) * stretched) * (steps - 1)), 0, steps - 1);
     indexByInstance.set(a.name, rampIndex);
     planes.push({
       name: a.name, type: a.type, side: a.side, area: a.area,

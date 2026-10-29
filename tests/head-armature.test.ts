@@ -291,3 +291,19 @@ test("front ears hug the head instead of sticking out as wings", () => {
     assert.ok(ear.bounds.height <= Math.round(height * 0.18), `${ear.name} is ${ear.bounds.height} px tall`);
   }
 });
+
+test("masses group the planes into three skin values; planes keep one step each", () => {
+  const ramp = ["#3b2027", "#7a4040", "#b8705a", "#e0a07a", "#f6d2b0"];
+  const base = { rect: { x: 0, y: 0, width: 96, height: 96 }, yaw: -35, ramp };
+  const distinct = (values: "masses" | "planes") =>
+    new Set(buildHeadArmature({ ...base, values }).raster.planes.map((p) => p.rampIndex));
+  const masses = distinct("masses");
+  assert.ok(masses.size <= 3, `masses use ${[...masses]}`);
+  assert.ok(!masses.has(0) && !masses.has(4), "the darkest and lightest steps stay free for accents");
+  assert.ok(distinct("planes").size > 3, "planes show the construction");
+});
+
+test("the headArmature op paints masses by default", () => {
+  const op = headArmatureOp.parse({ kind: "headArmature", rect: { x: 0, y: 0, width: 64, height: 64 }, planes: { ramp: ["#000000", "#444444", "#888888", "#bbbbbb", "#ffffff"] } });
+  assert.equal(op.planes?.values, "masses");
+});

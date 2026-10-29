@@ -62,6 +62,10 @@ export const headArmatureOp = z.object({
         .describe("Light direction; a vector is head-local (x right, y down, z toward the viewer)."),
       ramp: z.array(hexColor).min(2).max(8).describe("Skin ramp, darkest to lightest."),
       layer: z.string().default("head-planes").describe("Layer for the block-in; created when missing, below the guide."),
+      values: z
+        .enum(["masses", "planes"])
+        .default("masses")
+        .describe("'masses': light, half-tone and shadow masses, the start of the finished skin. 'planes': one ramp step per plane, a construction study only."),
     })
     .optional()
     .describe("When set, every visible plane is filled with the ramp colour of its lit value."),
@@ -228,7 +232,7 @@ export function compileHeadArmature(op: HeadArmatureOp, palette: readonly string
   const { armature, raster } = buildHeadArmature({
     rect: op.rect, archetype: op.archetype, yaw: op.yaw, pitch: op.pitch, roll: op.roll,
     sliders: op.sliders, hair: op.hair, neck: op.neck,
-    light: op.planes?.light, ramp: op.planes?.ramp,
+    light: op.planes?.light, ramp: op.planes?.ramp, values: op.planes?.values ?? "masses",
   });
   const picks = contrastingColors(palette, op.planes?.ramp ?? []);
   const guideColor = op.guideColor ?? picks[0] ?? "#2a6fdb";
