@@ -61,6 +61,18 @@ shapes and seven expressions at 16 and 32 px heads. Where features sit on the he
     moustache).
 17. **Contrast:** the eye strip is the strongest contrast on the head, doubly so under a helmet
     or headband. Tears and sweat are 1-px light-blue accents.
+18. **From 28 px the eye is a ball in a socket.** Realistic and adventure eyes are spheres set
+    in the orbit plane: the brow ridge overhangs the upper lid (the darkest skin value sits
+    there), the upper lid wraps the ball and casts a 1-px shadow on the white, the lower lid is
+    a lighter, thinner curve. Use the `eyes` returned by `draw` op `headArmature`: paint inside
+    `footprint`, lids along `upperLid`/`lowerLid`, brow along `browOverhang`.
+19. **A turned eye foreshortens; it does not slide.** In 3/4 the far eye is narrower, its outer
+    corner tucked against the far contour or behind the nose bridge, the near eye nearly full
+    width; the iris becomes an ellipse turned with the ball, and both pupils keep the same gaze.
+    Past yaw ≈ 70–80° the far eye is hidden (`visible: false`): do not draw it.
+20. **Anime and chibi eyes are decals.** They sit on the face plane, keep their drawn shape and
+    shrink in width only with the turn; no socket shadow, but the brow still sits on the brow
+    line returned by the armature.
 
 ## By size
 
@@ -399,11 +411,13 @@ OSSSSSSSMmmmMSSSSSSSO.OSSSSSMTTTTTTTMSSSSSO.OSSSSSSSMMMMMSSSSSSSO
 
 ## Procedure
 
-1. Draw the base head with no eyes, brows or mouth (`rules://32-heads-and-faces`).
+1. Draw the base head with no eyes, brows or mouth (`rules://32-heads-and-faces`); from 28 px
+   build it with `draw` op `headArmature` and keep its returned `eyes` and `landmarks`.
 2. Put the face on its own layer (`layer` op `create` "face", `rules://06-layers-and-rigging`)
    so an expression is a swap, not a repaint.
 3. Pick the eye size from the ladder; `draw` op `grid` the entry at the eye line — once per
-   eye, the second at the mirrored x, catch-light on the same side in both.
+   eye, the second at the mirrored x, catch-light on the same side in both. Turned heads from
+   28 px: fit each eye to its armature `footprint` instead of mirroring.
 4. One expression per frame: `frame` op `duplicate`, clear the face cel region
    (`draw` op `clear`), stamp brows, eyes, mouth from the recipe table; `tag` op `create` per
    expression name.
@@ -429,6 +443,8 @@ OSSSSSSSMmmmMSSSSSSSO.OSSSSSMTTTTTTTMSSSSSO.OSSSSSSSMMMMMSSSSSSSO
 | Mouth flaps like a puppet | Lip moved, jaw fixed; or too many shapes | Drop the whole lower half; ≤3–6 shapes, ≥2 frames each |
 | Blink invisible | Lid line as light as skin | Lid line in outline colour, lower lid 1 skin step darker |
 | Eyes twitch in motion | Eye pixels shifted between frames | Swap whole eyes on fixed rows |
+| Eyes look stuck on the face (≥28 px) | No socket, brow not overhanging | Darkest value under the brow; lid wraps the ball |
+| Both eyes the same width in 3/4 | Front eye copied across | Far eye from its foreshortened footprint |
 
 ## Review
 
@@ -441,6 +457,8 @@ OSSSSSSSMmmmMSSSSSSSO.OSSSSSMTTTTTTTMSSSSSO.OSSSSSSSMMMMMSSSSSSSO
 - Blink: closed frame darker than skin, ≥80 ms or 50/80/50, not on the breathing period.
 - Talk set ≤3 mouths at 16 px, each held ≥2 frames; closed mouth present for M B P.
 - Eye strip is the highest-contrast part of the head.
+- ≥28 px: eyes sit in the sockets under an overhanging brow; in a turn the far eye is narrower
+  or hidden.
 
 ## Sources
 
@@ -452,3 +470,5 @@ OSSSSSSSMmmmMSSSSSSSO.OSSSSSMTTTTTTTMSSSSSO.OSSSSSSSMMMMMSSSSSSSO
 - Dawe, *Make Your Own Pixel Art* pp. 119–122; *Pixel Logic* pp. 88, 99–100, 106–107 (eyes, spacing).
 - Pixnote and Sandro Maglione eye guides; art-pia small-canvas guide; Saint11 "Cuteness"; Tsu tutorials 7–8.
 - Hultgren, *Animal Drawing: Anatomy and Action* — ear and head channels (pp. 10–12).
+- Bridgman, *Constructive Anatomy*; Vilppu, *The Vilppu Drawing Manual* — the eye as a ball in
+  the orbit, lids wrapping it.
