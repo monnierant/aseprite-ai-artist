@@ -53,7 +53,11 @@ head at the right turn — if not, undo and change the parameters, never push
 cranium pixels. The default `planes.values:"masses"` paints light, half-tone
 and shadow masses: that is the start of the finished skin, keep it and refine
 its edges. `values:"planes"` (one step per plane) is a construction study —
-never leave plane facets in a finished face, they read as a mask. Then draw
+never leave plane facets in a finished face, they read as a mask. For
+`anime`/`chibi` the masses are one flat face value with shadow only under the
+jaw: keep the face flat, add only cast shadows (under the fringe, the chin on
+the neck) — no shadow block across the cheek. Below 64 px, no dark band on the
+upper lid: one skin row under the brow, white on both sides of the iris. Then draw
 the rest of the figure (step 2) and paint the head on its own layer over the
 masses, features into the returned footprints (`rules://32-heads-and-faces`,
 `rules://33-eyes-and-expressions`).
