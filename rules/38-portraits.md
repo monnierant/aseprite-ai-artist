@@ -53,7 +53,9 @@ recipes: `rules://33-eyes-and-expressions`.
    highlight band following the skull curve and the lightest tone on top; strands ≥2 px wide;
    the hairline is a colour edge, not an outline (`rules://35-hair-and-clothing`).
 8. **Eyes.** 7×5 at 48 px, 11×6 at 64 — the armature's `footprint` already has this size,
-   fill it: open eyes show white on both sides of the iris. Dark lid line, darker upper iris, pupil, catch-light,
+   fill it: open eyes show white on both sides of the iris. Below 64 px a brow is 1 px thick
+   (2 px only at its inner head), in the hair's mid value, never the outline colour: a dark
+   2-px brow over a 5-px eye reads as a scowl. Dark lid line, darker upper iris, pupil, catch-light,
    pale grey-blue whites. From 48 px make one eye dominant — brighter highlight or darker lid —
    and keep the other softer. Draw at final size; when reducing a bigger paint, enlarge the eyes
    by 2–3 px first or they vanish.
