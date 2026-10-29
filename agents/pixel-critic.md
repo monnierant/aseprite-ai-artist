@@ -90,6 +90,11 @@ In descending order of how much it costs the user:
     eye reads half-closed — ask for one skin row under the brow and white on
     both sides of the iris. On `anime`/`chibi`, a shadow wedge or diagonal block
     across the cheek — cel faces keep one flat value (`rules://38-portraits` step 6).
+9f. **Sticker highlights** (28 px and up): a light or shadow patch on the
+    face with straight edges and right-angle corners (a rectangle on the cheek
+    or chin, a diagonal block down the cheek). Ask for shapes that follow the
+    form and for the armature's masses to stay as the base
+    (`rules://38-portraits` step 6).
 10. **Animation: volume drift, height drift, uniform timing, no anticipation.**
 
 ## Output
