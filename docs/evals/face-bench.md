@@ -183,3 +183,23 @@ cel-flat in the rules, `pixel-critic` 9e).
 Verdict: **not passed yet**. Next: cel-shaded heads keep the sides in the
 light (shadow only under the jaw and on the neck), and `draw` repeats the
 flat-face and open-eye rules where the agent reads them first.
+
+### 2026-10-29, eighth pass — cel sides in the light
+
+Rows: npm 0.8.2 · v9 · v10 (anime/chibi sides stay lit, `draw` repeats the
+flat-face and open-eye rules).
+
+![48 px](face-bench/2026-10-29-v10-48px.png)
+![96 px](face-bench/2026-10-29-v10-96px.png)
+
+- The anime cheek wedge is gone at both sizes; the anime pair is level with
+  the before row.
+- 48 px: eyes open on every realistic/adventure cell; the six cells are level
+  with the before row, with the gain in construction on the 3/4 and low views.
+- 96 px: the captain from below and the adventurer front hold or beat the
+  before row. Two cells still lose on finish: the captain 3/4 (hard dark
+  patches on the cheek) and the adventurer 3/4 (a hard-edged half-tone wedge
+  on the near cheek).
+
+Verdict: **near parity on finish, ahead on construction** — awaiting the human
+verdict before ADR-0013 moves to *accepted*.
