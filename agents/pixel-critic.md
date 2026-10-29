@@ -81,6 +81,10 @@ In descending order of how much it costs the user:
     finished skin — hard-edged patches of four or more skin values, a
     rectangle for a nose, a seam down the cheek. The skin holds light,
     half-tone and shadow masses; name `planes.values:"masses"` as the fix.
+9d. **Swim-cap hair** (28 px and up): the hair mass follows the armature's
+    hair shell exactly — smooth even edge, no part, no lock crossing the
+    hairline, no volume above the skull. Same for a beard drawn as a band
+    along the jaw. Ask for a broken, asymmetric silhouette (`rules://38-portraits` step 7).
 10. **Animation: volume drift, height drift, uniform timing, no anticipation.**
 
 ## Output
