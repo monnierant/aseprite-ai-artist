@@ -122,3 +122,21 @@ Rows: npm 0.8.2 · v5 · v6 (wider cranium and face, eyes further apart).
 
 Next: a portrait 3/4 is yaw ±20–25° (rules 32/38, `draw`, `concept`,
 templates, bench table), then run the bench again.
+
+### 2026-10-29, fifth pass — portrait three-quarter at yaw −25
+
+Rows: npm 0.8.2 · v6 · v7 (3/4 = yaw ±20–25°).
+
+![48 px](face-bench/2026-10-29-v7-48px.png)
+![96 px](face-bench/2026-10-29-v7-96px.png)
+
+- The 3/4 heads read as portrait three-quarters: a sliver of far cheek beyond
+  the nose, the far eye narrower but whole. The captain in 3/4 now beats the
+  before row (square jaw, heavy brow, beard on the jaw).
+- The anime pair holds level with the before row.
+- What still loses at 48 px: the adventurer's eyes. The armature opened the
+  lid to 5×4 px with the brow on the row right above, and the agent painted a
+  heavy, half-closed eye on both briefs 3 and 4.
+
+Next: below 72 px the lid opens up to 1.4× (48 px → about 7×5) and the brow
+keeps one skin row above the lid, then run the bench again.
