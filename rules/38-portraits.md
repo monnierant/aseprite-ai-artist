@@ -39,7 +39,11 @@ recipes: `rules://33-eyes-and-expressions`.
    or lower (measured on a published sprite palette). Light patches: forehead, cheek apple, nose
    bridge, chin — each shaped like the form it sits on (cheek apple = a rounded triangle under
    the eye, nose bridge = a 1-px line, chin = a small arc), never a rectangle: a straight-edged
-   block of light reads as a sticker on the face. Shadow: the far cheek 1–2 px, under the hair edge 1 px, under the chin. From
+   block of light reads as a sticker on the face. The armature's masses ARE the skin shading:
+   paint features and cast shadows on top (under the nose, under the lower lip, under the hair
+   edge 1 px, under the chin onto the neck), never a second set of shadow polygons over the
+   cheek or jaw — two terminators read as a bruise. To change a mass, edit it on the head layer
+   and keep its curve. From
    32 px, forehead warmer, mid-face rosier, lower face cooler (`rules://20-color-for-pixel-art`).
    `anime` and `chibi` are cel-shaded: the armature gives one flat face value, keep it. The
    only shadows are cast shapes — under the fringe, under the chin onto the neck, the far
@@ -48,6 +52,8 @@ recipes: `rules://33-eyes-and-expressions`.
    that fills the shell exactly reads as a swim cap. Give it an asymmetric silhouette —
    locks crossing the hairline, a notch at the part, volume above the shell on top, tufts
    breaking the outline over the ears — and keep 1–2 px of skin visible at the temple.
+   Short and cropped hair too: 1–3 px of volume above the shell, a jagged top and sideburn
+   edge, a lighter clump on the lit side; a smooth grey band hugging the skull is a cap.
    A beard is a mass on the jaw planes that extends the chin silhouette, with a broken
    edge on the cheek; never a band along the jaw line. Flat mass first, then flow lines from the part or cowlick, 3–4 tones with the
    highlight band following the skull curve and the lightest tone on top; strands ≥2 px wide;

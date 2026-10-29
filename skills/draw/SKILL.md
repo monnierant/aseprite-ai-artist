@@ -57,7 +57,10 @@ never leave plane facets in a finished face, they read as a mask. For
 `anime`/`chibi` the masses are one flat face value with shadow only under the
 jaw: keep the face flat, add only cast shadows (under the fringe, the chin on
 the neck) — no shadow block across the cheek. Below 64 px, no dark band on the
-upper lid: one skin row under the brow, white on both sides of the iris. Then draw
+upper lid: one skin row under the brow, white on both sides of the iris. The
+masses are the skin shading: paint features, highlights and cast shadows over
+them, never a second set of shadow polygons. Hair, even short, rises 1–3 px
+above the shell with a broken edge — never a band hugging the skull. Then draw
 the rest of the figure (step 2) and paint the head on its own layer over the
 masses, features into the returned footprints (`rules://32-heads-and-faces`,
 `rules://33-eyes-and-expressions`).
