@@ -4,6 +4,8 @@ import type { AsepriteLink } from "../bridge/link.js";
 import { LiveError } from "../lib/protocol.js";
 import { compileGrid, type CanvasSize } from "../lib/grid.js";
 import { layoutText, loadFont, type TextAnchor } from "../lib/text.js";
+import { ArmatureError, buildHeadArmature, type Point } from "../lib/head-armature.js";
+import { deltaE, parseHex, rgbToLab } from "../lib/color.js";
 import { fail, hexColor, ok, targetShape } from "./kit.js";
 
 const textAnchor = z.enum([
@@ -24,6 +26,45 @@ const rectShape = z.object({
   y: z.number().int(),
   width: z.number().int().positive(),
   height: z.number().int().positive(),
+});
+
+const sliderValue = z.number().min(-1).max(1).optional();
+
+/**
+ * Volumetric head construction (ADR-0013): ovoid cranium + wedge facial block
+ * cut into simplified planes, oriented in 3D and rasterised here, then sent as
+ * plain pixel passes on a guide layer and an optional plane layer.
+ */
+export const headArmatureOp = z.object({
+  kind: z.literal("headArmature"),
+  rect: rectShape.describe("Box of the head, hair shell included, neck excluded. Height ≥ 28 px; below that use the pixel-placement tables in rules://32-heads-and-faces."),
+  archetype: z.enum(["realistic", "adventure", "anime", "chibi"]).default("adventure").describe("Proportion preset. anime/chibi get flat eye decals instead of eyeballs."),
+  yaw: z.number().min(-90).max(90).default(0).describe("Degrees; positive turns the face toward the viewer's right."),
+  pitch: z.number().min(-45).max(45).default(0).describe("Degrees; positive raises the face (seen from below)."),
+  roll: z.number().min(-30).max(30).default(0).describe("Degrees; positive tilts clockwise."),
+  sliders: z
+    .object({ jawWidth: sliderValue, faceLength: sliderValue, browRidge: sliderValue, cheekbones: sliderValue, age: sliderValue, chin: sliderValue })
+    .default({})
+    .describe("Each −1…1, 0 is the archetype's default."),
+  guideLayer: z.string().default("guide").describe("Layer for the construction guide; created when missing."),
+  guideColor: hexColor.optional().describe("Silhouette, plane borders, hair shell, neck. Default: the palette colour furthest from the skin ramp."),
+  featureColor: hexColor.optional().describe("Axis, brow/eye/mouth lines, eyelids, hairline, ears. Default: the next furthest palette colour."),
+  hair: z.boolean().default(true).describe("Hair shell (cranium grown 1–3 px) and hairline."),
+  neck: z.boolean().default(true).describe("Neck cylinder under the cranium."),
+  planes: z
+    .object({
+      light: z
+        .union([
+          z.enum(["upper-left", "upper-right", "front", "left", "right", "top"]),
+          z.object({ x: z.number(), y: z.number(), z: z.number() }),
+        ])
+        .default("upper-left")
+        .describe("Light direction; a vector is head-local (x right, y down, z toward the viewer)."),
+      ramp: z.array(hexColor).min(2).max(8).describe("Skin ramp, darkest to lightest."),
+      layer: z.string().default("head-planes").describe("Layer for the block-in; created when missing, below the guide."),
+    })
+    .optional()
+    .describe("When set, every visible plane is filled with the ramp colour of its lit value."),
 });
 
 /**
@@ -159,7 +200,94 @@ const drawOp = z.discriminatedUnion("kind", [
         "Transparent cells: 'erase' clears them, so the grid's rectangle ends up exactly as written; 'skip' leaves the pixel underneath, to stamp a shape over existing art.",
       ),
   }),
+  headArmatureOp,
 ]);
+
+type HeadArmatureOp = z.infer<typeof headArmatureOp>;
+
+/** Group pixels by colour into `pixels` ops, the primitive every Lua build already has. */
+function pixelOps(points: readonly Point[], color: string): Record<string, unknown>[] {
+  return points.length ? [{ kind: "pixels", color, points: points.map(([x, y]) => ({ x, y })) }] : [];
+}
+
+/** Palette entries ordered by distance from the skin ramp, furthest first. */
+export function contrastingColors(palette: readonly string[], against: readonly string[]): string[] {
+  const refs = (against.length ? against : ["#808080"]).map((h) => rgbToLab(parseHex(h)));
+  return palette
+    .filter((h) => (parseHex(h).a ?? 255) > 0)
+    .map((h) => {
+      const lab = rgbToLab(parseHex(h));
+      return { h: h.slice(0, 7), d: Math.min(...refs.map((r) => deltaE(lab, r))) };
+    })
+    .sort((a, b) => b.d - a.d)
+    .map((e) => e.h);
+}
+
+/** Build the armature and the draw.passes payload; pure, for tests. */
+export function compileHeadArmature(op: HeadArmatureOp, palette: readonly string[] = []) {
+  const { armature, raster } = buildHeadArmature({
+    rect: op.rect, archetype: op.archetype, yaw: op.yaw, pitch: op.pitch, roll: op.roll,
+    sliders: op.sliders, hair: op.hair, neck: op.neck,
+    light: op.planes?.light, ramp: op.planes?.ramp,
+  });
+  const picks = contrastingColors(palette, op.planes?.ramp ?? []);
+  const guideColor = op.guideColor ?? picks[0] ?? "#2a6fdb";
+  const featureColor = op.featureColor ?? picks.find((c) => c.toLowerCase() !== guideColor.toLowerCase()) ?? "#ff3fa0";
+  const passes: { layer: string; create: boolean; ops: Record<string, unknown>[] }[] = [];
+  if (op.planes) {
+    const ramp = op.planes.ramp;
+    const byIndex = new Map<number, Point[]>();
+    for (const p of raster.planes) {
+      const list = byIndex.get(p.rampIndex) ?? [];
+      list.push([p.x, p.y]);
+      byIndex.set(p.rampIndex, list);
+    }
+    const ops = [...byIndex.entries()].sort((a, b) => a[0] - b[0]).flatMap(([i, pts]) => pixelOps(pts, ramp[i]!));
+    passes.push({ layer: op.planes.layer, create: true, ops });
+  }
+  passes.push({
+    layer: op.guideLayer,
+    create: true,
+    ops: [...pixelOps(raster.structure, guideColor), ...pixelOps(raster.features, featureColor)],
+  });
+  return { armature, passes, guideColor, featureColor };
+}
+
+async function drawHeadArmature(
+  live: AsepriteLink,
+  args: { sprite?: string; frame?: number; paletteLock: boolean; label?: string },
+  op: HeadArmatureOp,
+) {
+  try {
+    // Refuse before touching Aseprite: a too-small head is a rules question, not a connection one.
+    if (op.rect.height < 28) {
+      throw new ArmatureError("too_small", `too_small: a ${op.rect.height}-px head is pixel placement, not construction — use the tables and templates in rules://32-heads-and-faces.`);
+    }
+    const info = await live.call<{ width: number; height: number; palette?: string[] }>(
+      "sprite.info",
+      { sprite: args.sprite, includePalette: true },
+      { expect: ["width", "height"] },
+    );
+    const { armature, passes, guideColor, featureColor } = compileHeadArmature(op, info.palette ?? []);
+    const data = await live.call<Record<string, unknown>>(
+      "draw.passes",
+      { sprite: args.sprite, frame: args.frame, paletteLock: args.paletteLock, label: args.label ?? "head armature", passes },
+      { expect: ["pixelsChanged", "passes"] },
+    );
+    data.opsApplied = 1;
+    data.armature = armature as unknown as Record<string, unknown>;
+    const eyes = armature.eyes.filter((e) => e.visible).map((e) => `${e.side}${e.near ? " (near)" : ""}`).join(", ");
+    return ok(
+      data,
+      `Head armature, level ${armature.level} (${armature.planes.length} planes), ${op.archetype} yaw ${op.yaw}° pitch ${op.pitch}° roll ${op.roll}°: guide on '${op.guideLayer}' (${guideColor} structure, ${featureColor} features)` +
+        (op.planes ? `, block-in on '${op.planes.layer}'` : "") +
+        `. Visible eyes: ${eyes || "none"}. One Ctrl+Z undoes it. Paint the features on a new layer over the guide, then hide or delete the guide; look before moving on.`,
+    );
+  } catch (err) {
+    if (err instanceof ArmatureError) return fail(new LiveError("invalid_args", err.message, { reason: err.code, see: "rules://32-heads-and-faces" }));
+    return fail(err);
+  }
+}
 
 export function registerDrawTools(server: McpServer, live: AsepriteLink): void {
   server.registerTool(
@@ -167,13 +295,14 @@ export function registerDrawTools(server: McpServer, live: AsepriteLink): void {
     {
       title: "Draw",
       description:
-        "Apply a batch of drawing operations to one cel, as a single undoable action. Ops: pixels, line, polyline, rect, ellipse, fill, replace, dither, gradient, clear, blit, text, grid. " +
+        "Apply a batch of drawing operations to one cel, as a single undoable action. Ops: pixels, line, polyline, rect, ellipse, fill, replace, dither, gradient, clear, blit, text, grid, headArmature. " +
         "Batch aggressively — a whole sprite in one call is normal and correct, and it means the user can undo your work with one Ctrl+Z. " +
         "Set `paletteLock` (default true) to snap every colour to the sprite's palette by perceptual distance before anything is written, so you cannot silently widen a curated palette. " +
         "Ops run in array order, so paint fills before outlines and outlines before highlights. " +
         "'text' is laid out here from a bitmap font and expanded to plain pixels before it reaches Aseprite — pass `measureOnly: true` with only 'text' ops to get each one's ink bounds without touching the sprite, e.g. to centre a label first. " +
         "'grid' paints a picture written as text — one character per pixel, a legend mapping characters to colours, the same shape `look op=\"ascii\"` returns — so you can see the whole silhouette while you write it instead of composing it from shapes. " +
-        "It is the easiest way to draw a small sprite or a whole animation frame, and to edit one: read a region with `look op=\"ascii\" layer=… rulers=false`, change the rows, and send them back as a grid at the region's x/y.",
+        "It is the easiest way to draw a small sprite or a whole animation frame, and to edit one: read a region with `look op=\"ascii\" layer=… rulers=false`, change the rows, and send them back as a grid at the region's x/y. " +
+        "'headArmature' (alone in its batch) builds a 3D head — ovoid cranium, wedge facial block, simplified planes, eyeballs in their sockets, hair shell, neck — turned by yaw/pitch/roll, draws its construction guide on `guideLayer` and, with `planes`, the lit plane block-in on `planes.layer`, in one undo step; it returns the landmarks (eyes, brow, nose base, mouth, chin, hairline, planes, rhythm curves) as JSON. Use it for every head of 32 px or more, then paint features over it — see rules://32-heads-and-faces.",
       inputSchema: {
         ...targetShape,
         ops: z.array(drawOp).min(1).max(512).describe("Applied in order, in one transaction."),
@@ -229,6 +358,14 @@ export function registerDrawTools(server: McpServer, live: AsepriteLink): void {
           )
           .optional()
           .describe("Only present when `measureOnly` was set."),
+        passes: z
+          .array(z.object({ layer: z.string(), pixelsChanged: z.number().int().optional() }))
+          .optional()
+          .describe("headArmature only: one entry per layer written."),
+        armature: z
+          .record(z.string(), z.unknown())
+          .optional()
+          .describe("headArmature only: level, silhouette, axis, landmarks, eyes, planes, ears, hairShell, neck, rhythm — integer canvas coordinates."),
       },
       annotations: {
         readOnlyHint: false,
@@ -257,6 +394,14 @@ export function registerDrawTools(server: McpServer, live: AsepriteLink): void {
             { measureOnly: true, textBounds },
             `Measured ${textBounds.length} text op(s) without touching the sprite.`,
           );
+        }
+
+        const armatureOps = args.ops.filter((op) => op.kind === "headArmature");
+        if (armatureOps.length > 0) {
+          if (args.ops.length > 1) {
+            return fail(new LiveError("invalid_args", "headArmature draws on its own layers, so it must be the only op in its batch. Send the other ops in a separate draw call."));
+          }
+          return await drawHeadArmature(live, args, armatureOps[0] as HeadArmatureOp);
         }
 
         // A grid is bounded by the canvas, which only Aseprite knows.

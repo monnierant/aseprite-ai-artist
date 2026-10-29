@@ -263,6 +263,30 @@ test("draw measureOnly rejects a batch that mixes a non-text op", async () => {
   await close();
 });
 
+test("headArmature must be alone in its batch and refuses heads under 28 px before touching Aseprite", async () => {
+  const { client, close } = await connected();
+  const mixed = await client.callTool({
+    name: "draw",
+    arguments: {
+      ops: [
+        { kind: "headArmature", rect: { x: 0, y: 0, width: 48, height: 48 } },
+        { kind: "pixels", color: "#ffffff", points: [{ x: 0, y: 0 }] },
+      ],
+    },
+  });
+  assert.equal(mixed.isError, true);
+  assert.equal((mixed.structuredContent as { code?: string }).code, "invalid_args");
+  const small = await client.callTool({
+    name: "draw",
+    arguments: { ops: [{ kind: "headArmature", rect: { x: 0, y: 0, width: 24, height: 24 } }] },
+  });
+  assert.equal(small.isError, true);
+  const structured = small.structuredContent as { code?: string; message?: string };
+  assert.equal(structured.code, "invalid_args", "no bridge is running, so not_connected here would mean it called Aseprite first");
+  assert.match(String(structured.message), /rules:\/\/32/);
+  await close();
+});
+
 test("preflight answers instead of failing when Aseprite is absent", async () => {
   const { client, close } = await connected();
   const result = await client.callTool({ name: "preflight", arguments: {} });
