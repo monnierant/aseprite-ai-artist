@@ -162,3 +162,24 @@ Verdict: **not passed yet** — 96 px is there, 48 px and anime finish are not.
 Next: below 64 px the orbit is one mid-shadow row and the darkest dark goes to
 the lid line and pupil only; anime faces stay cel-flat with cast shadows only
 (rules 32/33/38, `pixel-critic` 9e).
+
+### 2026-10-29, seventh pass — mid-value orbits, cel-flat anime
+
+Rows: npm 0.8.2 · v8 · v9 (orbit one mid-shadow row below 64 px, anime faces
+cel-flat in the rules, `pixel-critic` 9e).
+
+![48 px](face-bench/2026-10-29-v9-48px.png)
+![96 px](face-bench/2026-10-29-v9-96px.png)
+
+- 48 px eyes open up: the adventurer 3/4 now shows whites and a teal iris
+  instead of a slit. The brows are still heavy on the front view.
+- The anime 3/4 at 48 px loses most of the cheek wedge; at 96 px the agent
+  still paints one across the cheek. The armature itself put the turned side
+  of an anime head (temple, cheek side) on the shadow step at yaw −25, which
+  legitimised it.
+- The agent picks `adventure` for the captain in some runs and mirrors the
+  yaw (+25): the brief leaves both open, so these are choices, not bugs.
+
+Verdict: **not passed yet**. Next: cel-shaded heads keep the sides in the
+light (shadow only under the jaw and on the neck), and `draw` repeats the
+flat-face and open-eye rules where the agent reads them first.
