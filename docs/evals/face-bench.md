@@ -140,3 +140,25 @@ Rows: npm 0.8.2 · v6 · v7 (3/4 = yaw ±20–25°).
 
 Next: below 72 px the lid opens up to 1.4× (48 px → about 7×5) and the brow
 keeps one skin row above the lid, then run the bench again.
+
+### 2026-10-29, sixth pass — readable small eyes
+
+Rows: npm 0.8.2 · v7 · v8 (48 px lid opening up to 1.4×, brow one row higher).
+
+![48 px](face-bench/2026-10-29-v8-48px.png)
+![96 px](face-bench/2026-10-29-v8-96px.png)
+
+- At 96 px the branch now holds or beats the before row on the captain (both
+  angles) and the adventurer (both angles): turned heads, square jaw, jaw
+  underside from below, open eyes.
+- At 48 px the eyes are bigger but the agent still paints the upper lid as a
+  dark band: the rules told it the orbit is the darkest skin value, which at
+  48 px fills the whole space between brow and lid. The before row keeps the
+  more open, appealing eyes.
+- Anime 3/4 (both sizes): the agent paints a hard shadow wedge across the
+  cheek, although the armature hands it a flat face.
+
+Verdict: **not passed yet** — 96 px is there, 48 px and anime finish are not.
+Next: below 64 px the orbit is one mid-shadow row and the darkest dark goes to
+the lid line and pupil only; anime faces stay cel-flat with cast shadows only
+(rules 32/33/38, `pixel-critic` 9e).
