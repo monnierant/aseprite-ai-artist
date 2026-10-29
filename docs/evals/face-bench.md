@@ -203,3 +203,22 @@ flat-face and open-eye rules).
 
 Verdict: **near parity on finish, ahead on construction** — awaiting the human
 verdict before ADR-0013 moves to *accepted*.
+
+### 2026-10-29, ninth pass — ellipsoid-blended masses
+
+Rows: npm 0.8.2 · v10 · v11 (masses blend a fitted ellipsoid, highlights shaped
+after the form, thin mid-value brows below 64 px, `pixel-critic` 9f).
+
+![48 px](face-bench/2026-10-29-v11-48px.png)
+![96 px](face-bench/2026-10-29-v11-96px.png)
+
+- Regression. The terminator curves now, but the half-tone grew: the front
+  adventurer is split down the middle and the 3/4 heads keep a large hard
+  half-tone on the cheek. The captain lost its rectangles, not its flatness.
+- Root cause: the `upper-left` preset, `(-0.75, -0.6, 0.6)`, is a raking side
+  light that leaves about half of a front face (0.48) off the light step. The
+  before-row portraits are lit by a key light much closer to the view axis.
+
+Next: the `upper-left`/`upper-right` presets become a portrait key light,
+`(∓0.4, -0.45, 0.85)` — about 60–80 % of the face on the light step, the
+half-tone a curved band on the far side and under the jaw.
