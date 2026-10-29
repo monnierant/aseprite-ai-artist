@@ -41,3 +41,29 @@ Per head, all of:
 - Brief 2: the underside of the jaw is its own plane and the eye line bows up.
 - Hair sits on the cranium, stops at the ears; the neck goes under the skull.
 - The same character reads across its two briefs (1–2, 3–4, 5–6).
+
+## Results
+
+### 2026-10-29 — `gpt-6.1-terra`, Hermes, headless Aseprite
+
+Rows: npm 0.8.2 (before) · the branch with faceted planes (after v1) · the
+branch with `values: "masses"` (after v2). One run per cell, no retries.
+
+![48 px](face-bench/2026-10-29-48px.png)
+![96 px](face-bench/2026-10-29-96px.png)
+
+- The armature was used in all 24 branch runs, with no mention of it in the
+  brief. Before the rule became a gate in `draw` step 1b, the agent read the
+  rules and still blocked the head in by hand.
+- Construction improves. The 3/4 heads turn instead of sliding, the cranium
+  shows behind the ear, and the underside of the jaw shows from below (brief
+  2). The far eye is narrower.
+- Finish regresses. v1 left the plane facets in the skin, and the result
+  reads as a mask. v2 removes most of them but keeps a hard half-tone seam
+  down the face. The before row is still the more appealing set.
+- `anime` should not carry modelled planes: brief 5 v2 has a block of shadow
+  on the lower face where cel shading wants one flat value.
+
+Verdict: **not passed**. ADR-0013 stays *proposed*. Next steps: two values
+for `anime`/`chibi`, a softer half-tone edge for `realistic`/`adventure`,
+then run the bench again.
