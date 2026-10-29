@@ -173,11 +173,11 @@ review list and ` ```grid ` templates to transcribe with `draw` op `grid`.
 | Drawing | Read |
 |---------|------|
 | Any character | `rules://30-proportions-by-size`, `rules://31-anatomy-and-pose`, `rules://36-character-design` |
-| Its face, eyes, expression | `rules://32-heads-and-faces`, `rules://33-eyes-and-expressions` |
+| Its face, eyes, expression | `rules://32-heads-and-faces`, `rules://33-eyes-and-expressions` — any head of 28 px or more is built with `draw` op `headArmature` first |
 | Hands, feet, a held weapon | `rules://34-hands-and-feet` |
 | Hair, clothing, armour, capes | `rules://35-hair-and-clothing`, `rules://23-materials-soft` |
 | A turnaround, top-down or 8-direction set | `rules://37-views-and-directions`, `rules://47-top-down-animation` |
-| A dialogue portrait | `rules://38-portraits` |
+| A dialogue portrait | `rules://38-portraits` (built on `draw` op `headArmature`) |
 | Any animation | `rules://40-timing-and-spacing`, plus the cycle below |
 | Idle, walk/run, jump, attack | `rules://41-idle-and-breathing`, `rules://42-walk-and-run`, `rules://43-jump-fall-land`, `rules://44-attacks-and-impacts` |
 | Hair, capes, tails in motion; tiny movement | `rules://45-secondary-motion`, `rules://46-subpixel-animation` |

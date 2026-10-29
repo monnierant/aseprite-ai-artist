@@ -30,6 +30,15 @@ and ` ```grid ` templates. A template is a starting point you transcribe with
 `draw` op `grid`, mapping each legend role onto the sprite's palette; adapt
 it to the pose rather than inventing the shape from nothing.
 
+**A head of 28 px or more is not blocked in by hand.** Build it with `draw` op
+`headArmature` (alone in its call): `rect` is the head box, `archetype` and
+`sliders` carry the character, `yaw`/`pitch`/`roll` the turn, and `planes`
+with the skin ramp and light gives the lit block-in. It writes the `guide` and
+`head-planes` layers in one undo step and returns the landmarks, eye
+footprints, hair shell and neck you paint into. If the block-in does not read
+as the right head at the right turn, undo and change the parameters — never
+push cranium pixels by hand (`rules://32-heads-and-faces`).
+
 ### 2. Block in the silhouette
 
 One flat colour, no detail. Target the `base` layer. Everything in one `draw`
