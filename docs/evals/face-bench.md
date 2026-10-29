@@ -264,3 +264,25 @@ Next: the armature closes the skin with a selective outline by default with
 `masses` (darkest step away from the light, next step on the lit side, neck
 bottom open); `rules/38` and `draw` ask the agent to carry the line around the
 hair, beard and shoulders.
+
+### 2026-10-30, twelfth pass — selective skin outline
+
+Rows: npm 0.8.2 · v13 · v14 (`planes.outline` on by default with masses; the
+agent is asked to carry the line around hair, beard and shoulders).
+
+![48 px](face-bench/2026-10-29-v14-48px.png)
+![96 px](face-bench/2026-10-29-v14-96px.png)
+
+- The skin is now closed by an outline in every cell; the agent carries it
+  around the hair on some cells only.
+- No column moves past the before row. Captain (both angles): hair still a
+  smooth grey cap, beard a band along the jaw — the before row has strands,
+  highlights, a textured beard and wrinkles. Adventurer 3/4 and front: the
+  far-side half-tone reads as a diagonal band, where the before row keeps a
+  flat face with edge shading. Anime: level, slightly blotchy skin.
+- Shading probes (light threshold 0.48, ellipsoid weight 0.3) trade the band
+  for a straight strip on the front view and a flat 3/4; not adopted.
+
+Verdict: **not passed**. Construction (turn, jaw, from-below views) is ahead;
+the finish gap is now hair and beard rendering and the amount of detail the
+agent paints, not the armature's skin masses.
