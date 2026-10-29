@@ -370,3 +370,16 @@ test("a cel-shaded head turned from the light keeps its cheek out of the shadow"
     assert.equal(p.rampIndex, 3, `${p.name} falls into the cel shadow`);
   }
 });
+
+test("the turned-away half-tone runs from the temple to the jaw instead of a cheek wedge", () => {
+  const ramp = ["#3b2027", "#7a4040", "#b8705a", "#e0a07a", "#f6d2b0"];
+  for (const archetype of ["adventure", "realistic"] as const) {
+    const { raster } = buildHeadArmature({ rect: { x: 0, y: 0, width: 96, height: 96 }, archetype, yaw: 25, ramp, values: "masses" });
+    const share = (y: number) => {
+      const row = raster.planes.filter((p) => p.y === y);
+      return row.filter((p) => p.rampIndex < 3).length / row.length;
+    };
+    assert.ok(share(40) >= 0.2, `${archetype}: only ${share(40).toFixed(2)} of the brow row turns, the half-tone starts mid-face`);
+    assert.ok(share(72) > share(40), `${archetype}: the half-tone does not widen toward the jaw`);
+  }
+});

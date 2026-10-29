@@ -667,10 +667,26 @@ function smoothMasses(
 ): Map<number, number> {
   const at = (t: number) => clamp(Math.round(t * (steps - 1)), 0, steps - 1);
   const light = at(0.75), half = at(0.5), shadow = at(0.25);
+  // A straight plane edge stays straight under any blur. Half of the light
+  // comes from a smooth ellipsoid fitted to the head's pixels instead: its
+  // light contours are curves, so the terminator wraps around the cheekbone
+  // and hugs the far contour rather than running down the face as a line.
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const [k, name] of pixelInstance) {
+    const t = acc.get(name)!.type;
+    if (t === "neck" || t === "under") continue;
+    const [x, y] = unkey(k);
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+  }
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, rx = Math.max(1, (x1 - x0) / 2), ry = Math.max(1, (y1 - y0) / 2);
+  const wrap = (l: number) => (Math.max(0, l) + 0.35) / 1.35;
   const lit = new Map<number, number>();
   for (const [k, name] of pixelInstance) {
     const a = acc.get(name)!;
-    lit.set(k, (Math.max(0, dot(norm(a.n), lightVec)) + 0.35) / 1.35);
+    const [x, y] = unkey(k);
+    const nx = (x - cx) / rx, ny = (y - cy) / ry;
+    const ellipsoid = norm(v(nx, ny, Math.sqrt(Math.max(0.05, 1 - nx * nx - ny * ny))));
+    lit.set(k, 0.5 * wrap(dot(norm(a.n), lightVec)) + 0.5 * wrap(dot(ellipsoid, lightVec)));
   }
   const blur = (src: Map<number, number>, dx: number, dy: number) => {
     const out = new Map<number, number>();
