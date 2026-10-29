@@ -326,3 +326,22 @@ test("a front head in masses keeps the face out of the shadow step", () => {
     assert.ok(p.rampIndex >= 2, `${p.name} fell into the shadow`);
   }
 });
+
+test("modelled masses bend the terminator instead of following plane edges", () => {
+  const ramp = ["#3b2027", "#7a4040", "#b8705a", "#e0a07a", "#f6d2b0"];
+  const { raster } = buildHeadArmature({ rect: { x: 0, y: 0, width: 96, height: 96 }, yaw: -35, ramp, values: "masses" });
+  const at = new Map(raster.planes.map((p) => [`${p.x},${p.y}`, p.rampIndex]));
+  // Follow the light/half-tone boundary row by row: a plane edge keeps the
+  // same x for long stretches, a curved terminator keeps moving.
+  let rows = 0, unchanged = 0, prev: number | undefined;
+  for (const y of [...new Set(raster.planes.map((p) => p.y))].sort((a, b) => a - b)) {
+    const xs = raster.planes.filter((p) => p.y === y).map((p) => p.x).sort((a, b) => a - b);
+    const bx = xs.find((x) => { const a = at.get(`${x},${y}`), b = at.get(`${x + 1},${y}`); return (a === 3 && b === 2) || (a === 2 && b === 3); });
+    if (bx === undefined) { prev = undefined; continue; }
+    rows++;
+    if (prev === bx) unchanged++;
+    prev = bx;
+  }
+  assert.ok(rows >= 40, `the terminator spans only ${rows} rows`);
+  assert.ok(unchanged / rows <= 0.6, `the terminator stays straight on ${unchanged}/${rows} rows`);
+});

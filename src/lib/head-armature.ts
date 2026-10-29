@@ -651,6 +651,53 @@ function massIndex(type: string, lambert: number, archetype: Archetype, steps: n
   return shadow;
 }
 
+/**
+ * Per-pixel masses for modelled heads: each pixel starts with the wrapped
+ * light of its plane, the field is box-blurred over `radius` px inside the
+ * head, then cut into light / half-tone / shadow. Cavities (orbit, underside
+ * of the jaw, neck) stay in the shadow whatever the blur says.
+ */
+function smoothMasses(
+  pixelInstance: Map<number, string>,
+  acc: Map<string, { type: string; n: Vector3 }>,
+  lightVec: Vector3,
+  steps: number,
+  radius: number,
+  key: (x: number, y: number) => number,
+  unkey: (k: number) => Point,
+): Map<number, number> {
+  const at = (t: number) => clamp(Math.round(t * (steps - 1)), 0, steps - 1);
+  const light = at(0.75), half = at(0.5), shadow = at(0.25);
+  const lit = new Map<number, number>();
+  for (const [k, name] of pixelInstance) {
+    const a = acc.get(name)!;
+    lit.set(k, (Math.max(0, dot(norm(a.n), lightVec)) + 0.35) / 1.35);
+  }
+  const blur = (src: Map<number, number>, dx: number, dy: number) => {
+    const out = new Map<number, number>();
+    for (const k of src.keys()) {
+      const [x, y] = unkey(k);
+      let sum = 0, n = 0;
+      for (let i = -radius; i <= radius; i++) {
+        const v = src.get(key(x + i * dx, y + i * dy));
+        if (v !== undefined) { sum += v; n++; }
+      }
+      out.set(k, sum / n);
+    }
+    return out;
+  };
+  const smooth = blur(blur(lit, 1, 0), 0, 1);
+  const out = new Map<number, number>();
+  for (const [k, name] of pixelInstance) {
+    const type = acc.get(name)!.type;
+    if (type === "socket" || type === "under" || type === "neck") { out.set(k, shadow); continue; }
+    const v = smooth.get(k)!;
+    const faceType = type === "front" || type === "cheekFront" || type === "muzzle" || type === "chin";
+    out.set(k, v >= 0.55 ? light : v >= 0.4 || faceType ? half : shadow);
+  }
+  return out;
+}
+
 /** Outline plus interior of a closed pixel polygon (even-odd scanline fill). */
 function fillPolygon(outline: readonly Point[]): Point[] {
   const ring = dedupe(outline);
@@ -1090,8 +1137,15 @@ export function buildHeadArmature(input: ArmatureInput): ArmatureResult {
   if (chinPt) features.push(pix(chinPt));
 
   const planePixels: RasterLayers["planes"] = [];
+  // Modelled masses follow a smoothed light, not the plane edges: the
+  // terminator then curves over the cheekbone instead of running down the
+  // face as a straight seam.
+  const modelled = input.values === "masses" && archetype !== "anime" && archetype !== "chibi";
+  const perPixel = modelled
+    ? smoothMasses(pixelInstance, acc, lightVec, steps, Math.max(1, Math.round(input.rect.height / 14)), key, unkey)
+    : new Map([...pixelInstance].map(([k, name]) => [k, indexByInstance.get(name) ?? 0]));
   const cleaned = cleanPlaneValues(
-    new Map([...pixelInstance].map(([k, name]) => [k, indexByInstance.get(name) ?? 0])),
+    perPixel,
     Math.max(2, Math.round((input.rect.height * input.rect.height) / 400)),
     key,
   );
