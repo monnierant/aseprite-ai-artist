@@ -63,7 +63,8 @@ shapes and seven expressions at 16 and 32 px heads. Where features sit on the he
     or headband. Tears and sweat are 1-px light-blue accents.
 18. **From 28 px the eye is a ball in a socket.** Realistic and adventure eyes are spheres set
     in the orbit plane: the brow ridge overhangs the upper lid (the darkest skin value sits
-    there), the upper lid wraps the ball and casts a 1-px shadow on the white, the lower lid is
+    there from 64 px; below, one mid-shadow row, with a skin row between brow and lid —
+    a dark band on the lid reads as a sleepy, half-closed eye), the upper lid wraps the ball and casts a 1-px shadow on the white, the lower lid is
     a lighter, thinner curve. Use the `eyes` returned by `draw` op `headArmature`: paint inside
     `footprint`, lids along `upperLid`/`lowerLid`, brow along `browOverhang`.
 19. **A turned eye foreshortens; it does not slide.** In 3/4 the far eye is narrower, its outer

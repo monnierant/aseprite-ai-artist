@@ -39,6 +39,9 @@ recipes: `rules://33-eyes-and-expressions`.
    or lower (measured on a published sprite palette). Light patches: forehead, cheek apple, nose
    bridge, chin. Shadow: the far cheek 1–2 px, under the hair edge 1 px, under the chin. From
    32 px, forehead warmer, mid-face rosier, lower face cooler (`rules://20-color-for-pixel-art`).
+   `anime` and `chibi` are cel-shaded: the armature gives one flat face value, keep it. The
+   only shadows are cast shapes — under the fringe, under the chin onto the neck, the far
+   cheek 1 px at most. Never a wedge or a diagonal block across the cheek: it reads as a bruise.
 7. **Hair.** The shell is the skull the hair sits on, not the hair's outline: a hair mass
    that fills the shell exactly reads as a swim cap. Give it an asymmetric silhouette —
    locks crossing the hairline, a notch at the part, volume above the shell on top, tufts
@@ -47,7 +50,8 @@ recipes: `rules://33-eyes-and-expressions`.
    edge on the cheek; never a band along the jaw line. Flat mass first, then flow lines from the part or cowlick, 3–4 tones with the
    highlight band following the skull curve and the lightest tone on top; strands ≥2 px wide;
    the hairline is a colour edge, not an outline (`rules://35-hair-and-clothing`).
-8. **Eyes.** 7×5 at 48 px, 11×6 at 64: dark lid line, darker upper iris, pupil, catch-light,
+8. **Eyes.** 7×5 at 48 px, 11×6 at 64 — the armature's `footprint` already has this size,
+   fill it: open eyes show white on both sides of the iris. Dark lid line, darker upper iris, pupil, catch-light,
    pale grey-blue whites. From 48 px make one eye dominant — brighter highlight or darker lid —
    and keep the other softer. Draw at final size; when reducing a bigger paint, enlarge the eyes
    by 2–3 px first or they vanish.

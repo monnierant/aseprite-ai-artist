@@ -28,7 +28,9 @@ templates below. Eyes, brows and emotion: `rules://33-eyes-and-expressions`. Bus
    six plus the underside (forehead, side, orbit, nose, cheek, jaw); 28–39 px three plus the
    orbit (face, side, orbit). More planes than that turn into noise; fewer flatten the head.
 5. **Eyes sit in the orbit, under the brow.** The orbit is a hollow: the brow ridge overhangs
-   the upper lid and casts the darkest value on the face. Realistic and adventure eyes are
+   the upper lid and casts the darkest skin value on the face — from 64 px. Below 64 px the
+   orbit is one mid-shadow row under the brow; the darkest dark belongs to the lid line and
+   the pupil only, or the eye reads half-closed. Realistic and adventure eyes are
    spheres — the lids wrap them, and in a turn the far eye foreshortens against the far
    contour. Anime and chibi eyes are flat decals laid on the face plane: they turn with the
    face but keep their drawn shape.
