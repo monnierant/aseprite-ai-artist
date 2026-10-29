@@ -23,6 +23,9 @@ Vocabulaire : [CONTEXT.md](../../CONTEXT.md).
 
 `planes` : `{ light: {x,y,z} | "upper-left" | "upper-right" | "front" | …,
 ramp: [couleurs du sombre au clair], layer: "head-planes", values: "masses" | "planes" }`.
+`outline` (vrai par défaut avec `masses`) ferme la peau d'un contour sélectif : le cran
+le plus sombre du côté opposé à la lumière, le cran suivant côté éclairé ; le bas du cou
+reste ouvert (le col le couvre).
 `values: "masses"` (défaut) donne trois masses — lumière, demi-teinte, ombre
 — sur les crans intérieurs de la rampe, les extrêmes restant libres pour les
 accents. Pour `realistic` et `adventure`, la lumière est enveloppée puis lissée

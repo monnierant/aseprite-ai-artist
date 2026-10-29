@@ -52,7 +52,9 @@ hair shell, neck. `look op="preview"`: the block-in must read as the right
 head at the right turn — if not, undo and change the parameters, never push
 cranium pixels. The default `planes.values:"masses"` paints light, half-tone
 and shadow masses: that is the start of the finished skin, keep it and refine
-its edges. `values:"planes"` (one step per plane) is a construction study —
+its edges, and closes the skin with a selective outline (`planes.outline`, on by
+default with masses): continue that line around hair, beard and shoulders.
+`values:"planes"` (one step per plane) is a construction study —
 never leave plane facets in a finished face, they read as a mask. For
 `anime`/`chibi` the masses are one flat face value with shadow only under the
 jaw: keep the face flat, add only cast shadows (under the fringe, the chin on

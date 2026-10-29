@@ -67,7 +67,11 @@ recipes: `rules://33-eyes-and-expressions`.
    by 2–3 px first or they vanish.
 9. **Lines.** Outline the outer silhouette only; separate interior shapes by value. A dark
    border around head and shoulders lifts the portrait off its backdrop; on the shadow side a
-   rim sampled from the backdrop beats black (`rules://04-outlines-and-edges`).
+   rim sampled from the backdrop beats black (`rules://04-outlines-and-edges`). With
+   `masses` the armature already closes the skin with a selective outline (darkest skin step
+   away from the light, next step on the lit side); carry the same line around the hair, the
+   beard and the shoulders in each material's darkest value — a head outlined everywhere but
+   the hair reads as a face pasted on a wig. Never paint over the skin outline with fill.
 10. **Emotion = one base face with swappable brows, eyes and mouth** on their own layers;
     every expression must still be recognisably the same person. Idle: blink plus a 1-px jaw
     or hair shift (2 frames); talk: ≤3 mouth shapes; damage portraits may swap expression.

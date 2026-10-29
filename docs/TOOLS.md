@@ -99,7 +99,8 @@ refuses with `too_small`), `archetype` (`realistic` `adventure` `anime`
 `chin`, each −1…1), `guideLayer` (default `guide`), `guideColor` and
 `featureColor` (default: the two palette entries furthest from the skin ramp),
 `hair`, `neck`, and `planes: { ramp, light, layer, values }` for the lit
-block-in (default layer `head-planes`; `values: "masses"`, the default, gives
+block-in (default layer `head-planes`; `outline` (on with masses) closes the skin with a
+selective outline; `values: "masses"`, the default, gives
 light, half-tone and shadow masses to keep as the skin, with a curved
 terminator, or two cel values for `anime`/`chibi`, `"planes"` one step
 per plane for a construction study). The plane level follows the height: ≥ 80 px nine
