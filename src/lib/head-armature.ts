@@ -528,8 +528,8 @@ const SPLIT_BY_SIDE = new Set(["temple", "back", "cheekSide", "side", "socket", 
 const OCCLUSION: Record<string, number> = { socket: 0.8, under: 0.72, neck: 0.85, ear: 0.92 };
 
 const LIGHTS: Record<LightPreset, Vector3> = {
-  "upper-left": v(-0.6, -0.65, 1),
-  "upper-right": v(0.6, -0.65, 1),
+  "upper-left": v(-0.75, -0.6, 0.6),
+  "upper-right": v(0.75, -0.6, 0.6),
   front: v(0, -0.2, 1),
   left: v(-1, -0.15, 0.45),
   right: v(1, -0.15, 0.45),
@@ -561,6 +561,27 @@ function polylinePixels(points: readonly Point[], closed = false): Point[] {
   for (let i = 0; i + 1 < points.length; i++) linePixels(points[i]!, points[i + 1]!, out);
   if (closed && points.length > 2) linePixels(points[points.length - 1]!, points[0]!, out);
   return out;
+}
+
+/** Outline plus interior of a closed pixel polygon (even-odd scanline fill). */
+function fillPolygon(outline: readonly Point[]): Point[] {
+  const ring = dedupe(outline);
+  if (ring.length < 3) return ring;
+  const out: Point[] = [...ring];
+  const ys = ring.map((p) => p[1]);
+  for (let y = Math.min(...ys); y <= Math.max(...ys); y++) {
+    const xs: number[] = [];
+    for (let i = 0; i < ring.length; i++) {
+      const [x0, y0] = ring[i]!;
+      const [x1, y1] = ring[(i + 1) % ring.length]!;
+      if ((y0 <= y && y < y1) || (y1 <= y && y < y0)) xs.push(x0 + ((y - y0) * (x1 - x0)) / (y1 - y0));
+    }
+    xs.sort((a, b) => a - b);
+    for (let i = 0; i + 1 < xs.length; i += 2) {
+      for (let x = Math.ceil(xs[i]!); x <= Math.floor(xs[i + 1]!); x++) out.push([x, y]);
+    }
+  }
+  return dedupe(out);
 }
 
 function dedupe(points: readonly Point[]): Point[] {
@@ -737,11 +758,22 @@ export function buildHeadArmature(input: ArmatureInput): ArmatureResult {
   const ambient = 0.22;
   const planes: ArmaturePlane[] = [];
   const indexByInstance = new Map<string, number>();
+  // Raw lit values, then stretched over the ramp: a head facing the light
+  // would otherwise push every front plane to the top step and read flat.
+  const raw = new Map<string, number>();
   for (const a of acc.values()) {
-    const n = norm(a.n);
-    const lambert = Math.max(0, dot(n, lightVec));
-    const value = (ambient + (1 - ambient) * lambert) * (OCCLUSION[a.type] ?? 1);
-    const rampIndex = clamp(Math.round(value * (steps - 1)), 0, steps - 1);
+    const lambert = Math.max(0, dot(norm(a.n), lightVec));
+    raw.set(a.name, (ambient + (1 - ambient) * lambert) * (OCCLUSION[a.type] ?? 1));
+  }
+  const rawValues = [...raw.values()];
+  const vMin = Math.min(...rawValues), vMax = Math.max(...rawValues);
+  for (const a of acc.values()) {
+    const value = raw.get(a.name)!;
+    const stretched = vMax - vMin > 1e-6 ? (value - vMin) / (vMax - vMin) : value;
+    // Lit planes share the upper steps; the darkest step is kept for the
+    // occluded planes (orbit, underside of the jaw), which read as cavities.
+    const floor = OCCLUSION[a.type] !== undefined && a.type !== "ear" ? 0 : 0.3;
+    const rampIndex = clamp(Math.round((floor + (1 - floor) * stretched) * (steps - 1)), 0, steps - 1);
     indexByInstance.set(a.name, rampIndex);
     planes.push({
       name: a.name, type: a.type, side: a.side, area: a.area,
@@ -851,7 +883,7 @@ export function buildHeadArmature(input: ArmatureInput): ArmatureResult {
     eyes.push({
       side, near: false, kind,
       center: centerScreen,
-      footprint: dedupe([...upper, ...[...lower].reverse()].filter((p) => visible(p, 0.04)).map((p) => pix(p))),
+      footprint: fillPolygon([...upper, ...[...lower].reverse()].filter((p) => visible(p, 0.04)).map((p) => pix(p))),
       upperLid: curve(upper, 0.04),
       lowerLid: curve(lower, 0.04),
       browOverhang: curve(browPts),
