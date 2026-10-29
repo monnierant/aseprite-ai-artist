@@ -633,13 +633,12 @@ function cleanPlaneValues(values: Map<number, number>, minArea: number, key: (x:
 function massIndex(type: string, lambert: number, archetype: Archetype, steps: number): number {
   const at = (t: number) => clamp(Math.round(t * (steps - 1)), 0, steps - 1);
   const light = at(0.75), half = at(0.5), shadow = at(0.25);
-  // Cel-shaded archetypes: one skin value and one shadow. Only the planes that
-  // wrap around the head (side, temple, back), the neck and the underside of
-  // the jaw take the shadow; the face itself stays one flat light, and the
+  // Cel-shaded archetypes: one skin value and one shadow. Only the neck and the
+  // underside of the jaw take the shadow; the face and the sides stay one flat
+  // light (a turned side in shadow reads as a block across the cheek), and the
   // decal eyes get no orbit.
   if (archetype === "anime" || archetype === "chibi") {
     if (type === "under" || type === "neck") return half;
-    if ((type === "cheekSide" || type === "temple" || type === "back") && lambert < 0.2) return half;
     return light;
   }
   if (type === "socket" || type === "under" || type === "neck") return shadow;

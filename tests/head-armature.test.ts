@@ -362,3 +362,11 @@ test("a 48 px eye opens to about 7x5 with a skin row under the brow", () => {
     assert.ok(Math.min(...ys) - Math.max(...e.browOverhang.map((p) => p[1])) >= 2, `${e.side} brow rests on the lid`);
   }
 });
+
+test("a cel-shaded head turned from the light keeps its cheek out of the shadow", () => {
+  const ramp = ["#3b2027", "#7a4040", "#b8705a", "#e0a07a", "#f6d2b0"];
+  const { armature } = buildHeadArmature({ rect: { x: 0, y: 0, width: 96, height: 96 }, archetype: "anime", yaw: -25, ramp, values: "masses" });
+  for (const p of armature.planes.filter((q) => q.type !== "under" && q.type !== "neck")) {
+    assert.equal(p.rampIndex, 3, `${p.name} falls into the cel shadow`);
+  }
+});
