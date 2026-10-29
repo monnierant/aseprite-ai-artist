@@ -37,7 +37,9 @@ recipes: `rules://33-eyes-and-expressions`.
 6. **Light and skin.** One source, upper left — the same `light` given to the armature, so the
    plane values match. Three skin tones plus one dark accent (nostril, lip seam, eye crease). Shadow turned 10–22° toward red, saturation +19–26, brightness equal
    or lower (measured on a published sprite palette). Light patches: forehead, cheek apple, nose
-   bridge, chin. Shadow: the far cheek 1–2 px, under the hair edge 1 px, under the chin. From
+   bridge, chin — each shaped like the form it sits on (cheek apple = a rounded triangle under
+   the eye, nose bridge = a 1-px line, chin = a small arc), never a rectangle: a straight-edged
+   block of light reads as a sticker on the face. Shadow: the far cheek 1–2 px, under the hair edge 1 px, under the chin. From
    32 px, forehead warmer, mid-face rosier, lower face cooler (`rules://20-color-for-pixel-art`).
    `anime` and `chibi` are cel-shaded: the armature gives one flat face value, keep it. The
    only shadows are cast shapes — under the fringe, under the chin onto the neck, the far
