@@ -23,13 +23,17 @@ Vocabulaire : [CONTEXT.md](../../CONTEXT.md).
 
 `planes` : `{ light: {x,y,z} | "upper-left" | "upper-right" | "front" | …,
 ramp: [couleurs du sombre au clair], layer: "head-planes", values: "masses" | "planes" }`.
-`values: "masses"` (défaut) groupe les plans en trois masses — lumière,
-demi-teinte, ombre, les cavités rejoignant l'ombre — sur les crans intérieurs
-de la rampe, les extrêmes restant libres pour les accents : c'est le départ de
-la peau finie. `values: "planes"` donne à chaque plan le cran de son
-éclairement lambertien : une étude de construction, jamais une peau finie
-(des facettes laissées dans un visage fini lisent comme un masque — constat du
-banc visage).
+`values: "masses"` (défaut) donne trois masses — lumière, demi-teinte, ombre
+— sur les crans intérieurs de la rampe, les extrêmes restant libres pour les
+accents. Pour `realistic` et `adventure`, la lumière est enveloppée puis lissée
+pixel par pixel (flou de rayon ≈ hauteur/14) : le terminateur se courbe sur la
+pommette au lieu de suivre une arête de plan ; orbites, dessous de mâchoire et
+cou restent dans l'ombre. Pour `anime` et `chibi`, deux valeurs seulement
+(cel shading) : le visage reste un aplat, seuls les côtés tournés, le dessous
+de la mâchoire et le cou prennent l'ombre, et les yeux en décalque n'ont pas
+d'orbite. `values: "planes"` donne à chaque plan le cran de son éclairement
+lambertien : une étude de construction, jamais une peau finie (des facettes
+laissées dans un visage fini lisent comme un masque — constat du banc visage).
 `paletteLock` s'applique comme pour les autres ops.
 
 Le niveau de plans se déduit de `rect.height` : ≥ 80 → 9, 40–79 → 6 + dessous,
