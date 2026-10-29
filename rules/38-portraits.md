@@ -18,7 +18,7 @@ recipes: `rules://33-eyes-and-expressions`.
    64×80 (OHRRPGCE).
 2. **Frame first.** Face-only or bust (head, neck, shoulders cut by the canvas edge); front or
    slightly turned. Head (hair top to chin) 60–75% of the canvas height, 1–2 px of air above
-   the hair, shoulders below. Turn the head with the armature's `yaw` (3/4 = ±30–40°) and
+   the hair, shoulders below. Turn the head with the armature's `yaw` (3/4 = ±20–25°; ±35° is a strong turn) and
    `pitch` rather than sliding front features. Conflict: one guide gives 60–70% for a 32 px
    bust, the 48 px template is 75% because bob hair adds height; both sit in the range.
 3. **Three decisions before any shading:** face shape, brow shape, eye shape. Then exaggerate

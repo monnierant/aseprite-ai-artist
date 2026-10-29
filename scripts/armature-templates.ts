@@ -25,10 +25,10 @@ export interface ArmatureTemplateSpec {
 /** The set rules/32 carries: front and 3/4 turned toward the upper-left light. */
 export const ARMATURE_TEMPLATES: ArmatureTemplateSpec[] = [
   { name: "armature-32-front", height: 32, archetype: "adventure", yaw: 0, pitch: 0 },
-  { name: "armature-32-tq", height: 32, archetype: "adventure", yaw: -35, pitch: 0 },
+  { name: "armature-32-tq", height: 32, archetype: "adventure", yaw: -25, pitch: 0 },
   { name: "armature-48-front", height: 48, archetype: "adventure", yaw: 0, pitch: 0 },
-  { name: "armature-48-tq", height: 48, archetype: "adventure", yaw: -35, pitch: 0 },
-  { name: "armature-48-tq-up", height: 48, archetype: "realistic", yaw: -30, pitch: 20 },
+  { name: "armature-48-tq", height: 48, archetype: "adventure", yaw: -25, pitch: 0 },
+  { name: "armature-48-tq-up", height: 48, archetype: "realistic", yaw: -25, pitch: 20 },
 ];
 
 /** One template's fenced block, exactly as it appears in the rule file. */
