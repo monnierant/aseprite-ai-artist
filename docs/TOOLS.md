@@ -56,7 +56,7 @@ has to see them to recover.
 
 | Tool | Ops / kinds | Notes |
 |------|-------------|-------|
-| `draw` | `pixels` `line` `polyline` `rect` `ellipse` `fill` `replace` `dither` `gradient` `clear` `blit` `text` `grid` | Batch. One transaction, one undo step. |
+| `draw` | `pixels` `line` `polyline` `rect` `ellipse` `fill` `replace` `dither` `gradient` `clear` `blit` `text` `grid` `headArmature` | Batch. One transaction, one undo step. |
 | `select` | `get` `none` `all` `rect` `ellipse` `color` `invert` `grow` `shrink` | Scopes `draw`, `transform` and `recolor`. |
 | `transform` | `translate` `flip` `rotate` `scale` `outline` `crop_to_content` | Acts on ONE cel; there is no scope parameter. Non-90° rotation needs `allowLossy`. `outline`'s `side` (`outside` default, `inside`) picks which pixels get painted; `diagonals` (default `false`) switches 4- to 8-neighbour. |
 | `recolor` | `shade` `snap` `replace` `hue_shift` `desaturate` | Operates on distinct colours, not pixels; one pass, one undo step. |
@@ -86,6 +86,29 @@ colour: the palette lock snaps each legend colour once, and `selectionOnly`
 clips both the painted and the erased cells. A
 ragged row or a character missing from the legend is refused with its row and
 column, never padded. See [ADR-0010](adr/0010-pixel-grid.md).
+
+`draw` op kind `headArmature` builds a head as volumes and planes
+([ADR-0013](adr/0013-volumetric-head-construction.md),
+[spec](specs/head-armature.md)): an ovoid cranium and a wedge facial block cut
+into Asaro-style planes, eyeballs in their sockets, a hair shell and a neck,
+turned by `yaw` (±90°, positive toward the viewer's right), `pitch` (±45°,
+positive = seen from below) and `roll` (±30°, clockwise). Inputs: `rect` (head
+box, hair shell included, neck excluded; height ≥ 28 — below that the op
+refuses with `too_small`), `archetype` (`realistic` `adventure` `anime`
+`chibi`), `sliders` (`jawWidth` `faceLength` `browRidge` `cheekbones` `age`
+`chin`, each −1…1), `guideLayer` (default `guide`), `guideColor` and
+`featureColor` (default: the two palette entries furthest from the skin ramp),
+`hair`, `neck`, and `planes: { ramp, light, layer }` for the lit block-in
+(default layer `head-planes`). The plane level follows the height: ≥ 80 px nine
+planes, 40–79 six plus the underside of the jaw, 28–39 three plus the orbit.
+The geometry runs on the server; Aseprite receives plain `pixels` ops through
+`draw.passes`, which paints each layer (created when missing) inside one
+transaction — one Ctrl+Z. It must be the only op in its batch. The result adds
+`passes` and `armature`: `level`, `silhouette`, `axis`, `landmarks` (brow,
+eyeLine, noseBase, mouth, chin, hairline), `eyes` (centre, footprint, lids,
+brow overhang, `visible`, `near`), `planes` (type, side, value, colour, area,
+bounds), `ears`, `hairShell`, `neck` and 3–4 `rhythm` curves that are never
+drawn.
 
 ### Font format
 

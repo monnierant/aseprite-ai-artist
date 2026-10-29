@@ -15,7 +15,8 @@ Vocabulaire : [CONTEXT.md](../../CONTEXT.md).
 | `roll` | degrés −30…30 | 0 | roulis, positif = sens horaire |
 | `sliders` | objet, chaque valeur −1…1 | 0 | `jawWidth`, `faceLength`, `browRidge`, `cheekbones`, `age`, `chin` |
 | `guideLayer` | string | `"guide"` | calque des repères ; créé s'il manque |
-| `guideColor` | couleur | palette, la plus contrastée | couleur des tracés de guide |
+| `guideColor` | couleur | palette, la plus éloignée de la rampe | tracés de structure |
+| `featureColor` | couleur | palette, la suivante | axe, lignes des traits, paupières, implantation, oreilles |
 | `hair` | bool | true | coquille de cheveux + ligne d'implantation |
 | `neck` | bool | true | cylindre du cou |
 | `planes` | objet optionnel | absent | bloc-in des plans, voir ci-dessous |
@@ -61,21 +62,32 @@ Renvoyée en JSON (coordonnées entières de la toile) :
 
 ```json
 {
-  "level": 6,
-  "silhouette": [[x,y], …],
-  "axis": [[x,y], …],
-  "landmarks": { "brow": [[x,y],…], "eyeLine": [[x,y],…], "noseBase": [x,y],
+  "level": 6, "archetype": "adventure",
+  "orientation": { "yaw": 30, "pitch": 0, "roll": 0 }, "scale": 63.95,
+  "silhouette": [[x,y], …], "axis": [[x,y], …],
+  "landmarks": { "brow": [[x,y],…], "eyeLine": [[x,y],…], "noseBase": [[x,y],…],
                  "mouth": [[x,y],…], "chin": [x,y], "hairline": [[x,y],…] },
-  "eyes": [{ "side": "near"|"far"|"left"|"right", "footprint": [[x,y],…],
-             "upperLid": [[x,y],…], "lowerLid": [[x,y],…],
-             "browOverhang": [[x,y],…], "visible": true }],
-  "planes": [{ "name": "front", "polygon": [[x,y],…], "value": 0.82,
-               "color": "#…" }],
-  "ears": [{ "side": "near", "polygon": [[x,y],…] }],
-  "neck": [[x,y], …],
-  "rhythm": [{ "name": "brow-cheek-jaw", "points": [[x,y],…] }]
+  "eyes": [{ "side": "left"|"right", "near": true, "kind": "sphere"|"decal",
+             "center": [x,y], "footprint": [[x,y],…], "upperLid": [[x,y],…],
+             "lowerLid": [[x,y],…], "browOverhang": [[x,y],…], "visible": true }],
+  "planes": [{ "name": "side-left", "type": "side", "side": "left"|"right"|"center",
+               "area": 627, "bounds": {x,y,width,height}, "centroid": [x,y],
+               "value": 0.59, "rampIndex": 3, "color": "#…" }],
+  "ears": [{ "side": "left", "near": true, "polygon": [[x,y],…], "visible": true }],
+  "hairShell": [[x,y], …], "neck": [[x,y], …],
+  "rhythm": [{ "name": "brow-cheek-jaw-near", "points": [[x,y],…] }]
 }
 ```
+
+`side` est celui du spectateur ; `near` désigne l'œil (ou l'oreille) tourné
+vers lui. `value` est l'éclairement brut ; `rampIndex` le répartit sur la
+rampe, le pas le plus sombre étant réservé à l'orbite et au dessous de
+mâchoire. `footprint` est une surface remplie, pas un contour.
+
+Côté Aseprite, l'op passe par `draw.passes` (extension) : une passe
+`draw.batch` par calque, calques créés s'ils manquent, le tout dans une seule
+transaction. Les couleurs de guide par défaut sont les deux entrées de palette
+les plus éloignées (ΔE) de la rampe de peau.
 
 Les courbes `rhythm` (3–4) ne sont jamais tracées.
 
