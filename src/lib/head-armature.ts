@@ -547,8 +547,8 @@ const OCCLUSION: Record<string, number> = { socket: 0.8, under: 0.72, neck: 0.85
 const UNDER_HAIR: Record<string, number> = { top: 0.82, back: 0.9 };
 
 const LIGHTS: Record<LightPreset, Vector3> = {
-  "upper-left": v(-0.75, -0.6, 0.6),
-  "upper-right": v(0.75, -0.6, 0.6),
+  "upper-left": v(-0.4, -0.45, 0.85),
+  "upper-right": v(0.4, -0.45, 0.85),
   front: v(0, -0.2, 1),
   left: v(-1, -0.15, 0.45),
   right: v(1, -0.15, 0.45),
