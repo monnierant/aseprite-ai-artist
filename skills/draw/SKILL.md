@@ -30,19 +30,34 @@ and ` ```grid ` templates. A template is a starting point you transcribe with
 `draw` op `grid`, mapping each legend role onto the sprite's palette; adapt
 it to the pose rather than inventing the shape from nothing.
 
-**A head of 28 px or more is not blocked in by hand.** Build it with `draw` op
-`headArmature` (alone in its call): `rect` is the head box, `archetype` and
-`sliders` carry the character, `yaw`/`pitch`/`roll` the turn, and `planes`
-with the skin ramp and light gives the lit block-in. It writes the `guide` and
-`head-planes` layers in one undo step and returns the landmarks, eye
-footprints, hair shell and neck you paint into. If the block-in does not read
-as the right head at the right turn, undo and change the parameters — never
-push cranium pixels by hand (`rules://32-heads-and-faces`).
+### 1b. A head of 28 px or more: build it first
+
+**Gate.** If the sprite has a head 28 px tall or more (portrait, bust, a large
+character), its first pixels come from `draw` op `headArmature`, alone in its
+call — never from `grid`, `polyline`, `ellipse` or `rect`. A hand-drawn head
+at this size comes out as an egg with a face printed on it, and the review
+sends it back.
+
+```
+draw ops=[{ kind:"headArmature", rect:{x:16,y:6,width:48,height:48},
+            archetype:"adventure", yaw:-35, pitch:0,
+            sliders:{ jawWidth:0.2 }, planes:{ ramp:["#3b2027","#7a4040","#b8705a","#e0a07a","#f6d2b0"] } }]
+```
+
+`rect` is the head box (hair included, neck excluded); `yaw` −30…−40 is a 3/4
+turned toward an upper-left light, 0 is front; `pitch` > 0 is seen from below.
+It writes a `guide` layer and a lit `head-planes` layer in one undo step and
+returns `armature`: eye footprints, brow, nose base, mouth, chin, hairline,
+hair shell, neck. `look op="preview"`: the block-in must read as the right
+head at the right turn — if not, undo and change the parameters, never push
+cranium pixels. Then draw the rest of the figure (step 2) and paint the head
+on its own layer over the planes, features into the returned footprints
+(`rules://32-heads-and-faces`, `rules://33-eyes-and-expressions`).
 
 ### 2. Block in the silhouette
 
 One flat colour, no detail. Target the `base` layer. Everything in one `draw`
-call.
+call — except a head of 28 px or more, which step 1b already built.
 
 For anything up to about 32×32, write it as a **grid**: one character per
 pixel, so you see the whole silhouette while you write it instead of finding

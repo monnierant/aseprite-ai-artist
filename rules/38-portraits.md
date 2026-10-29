@@ -3,7 +3,9 @@
 A portrait is a face at 32–64+ px shown in a dialogue box, a select screen or a status panel,
 usually held for seconds. It must carry identity (face shape, hair, one defining feature) and
 emotion (a swappable brow/eye/mouth set) and still read at 1×. Without rules agents draw a
-sprite head made big: 2×2 eyes, no planes, hair as a helmet. A portrait head is built, not
+sprite head made big: 2×2 eyes, no planes, hair as a helmet. **The first `draw` call on a
+portrait head of 28 px or more is `headArmature`; never block it with grid, polyline or
+ellipse.** A portrait head is built, not
 outlined: `draw` op `headArmature` gives the cranium, facial block, planes, eye sockets, hair
 shell and neck at any turn (`rules://32-heads-and-faces`); eyes, mouths and expression
 recipes: `rules://33-eyes-and-expressions`.

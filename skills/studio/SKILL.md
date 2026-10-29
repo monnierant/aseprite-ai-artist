@@ -224,6 +224,9 @@ over the active layer and frame.
   a guide for shapes and poses; the pixels are still drawn.
 - **Ask about things a default covers.** Light from the upper-left is not worth
   a round trip.
+- **Draw a head of 28 px or more by hand.** Its first pixels come from `draw`
+  op `headArmature` (`aseprite:draw` step 1b); grids, polylines and ellipses
+  for a head that size give a flat egg with a face printed on.
 - **Declare done without `look` and a review.** A tool result saying pixels
   changed is not evidence the sprite is right.
 - **Leave the user's document in a state they did not ask for** — stray scratch
