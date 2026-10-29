@@ -85,6 +85,11 @@ In descending order of how much it costs the user:
     hair shell exactly — smooth even edge, no part, no lock crossing the
     hairline, no volume above the skull. Same for a beard drawn as a band
     along the jaw. Ask for a broken, asymmetric silhouette (`rules://38-portraits` step 7).
+9e. **Sleepy eyes and bruised anime cheeks** (28 px and up): an upper lid
+    painted as a dark band with the brow on the row right above, so a wide-open
+    eye reads half-closed — ask for one skin row under the brow and white on
+    both sides of the iris. On `anime`/`chibi`, a shadow wedge or diagonal block
+    across the cheek — cel faces keep one flat value (`rules://38-portraits` step 6).
 10. **Animation: volume drift, height drift, uniform timing, no anticipation.**
 
 ## Output
