@@ -381,3 +381,13 @@ test("a portrait key light keeps most of the face lit and the far side in half-t
     assert.ok(lit <= 0.9, `${archetype} yaw ${yaw}: ${lit.toFixed(2)} of the face is lit, no turn left`);
   }
 });
+
+test("the shadow step stays a core shadow at the far contour, not a block on the cheek", () => {
+  const ramp = ["#3b2027", "#7a4040", "#b8705a", "#e0a07a", "#f6d2b0"];
+  for (const [archetype, yaw] of [["adventure", 0], ["adventure", 25], ["adventure", -25], ["realistic", -25]] as const) {
+    const { raster } = buildHeadArmature({ rect: { x: 0, y: 0, width: 96, height: 96 }, archetype, yaw, ramp, values: "masses" });
+    const face = raster.planes.filter((p) => p.y > 50 && p.y < 80);
+    const dark = face.filter((p) => p.rampIndex <= 1).length / face.length;
+    assert.ok(dark < 0.14, `${archetype} yaw ${yaw}: ${dark.toFixed(2)} of the lower face is on the shadow step`);
+  }
+});

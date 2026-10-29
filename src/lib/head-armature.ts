@@ -708,7 +708,7 @@ function smoothMasses(
     if (type === "socket" || type === "under" || type === "neck") { out.set(k, shadow); continue; }
     const v = smooth.get(k)!;
     const faceType = type === "front" || type === "cheekFront" || type === "muzzle" || type === "chin";
-    out.set(k, v >= 0.55 ? light : v >= 0.4 || faceType ? half : shadow);
+    out.set(k, v >= 0.55 ? light : v >= 0.32 || faceType ? half : shadow);
   }
   return out;
 }
