@@ -71,6 +71,12 @@ In descending order of how much it costs the user:
 7. **Strays and noise.** Isolated pixels, detail that is just dirt.
 8. **Inconsistent lines.** Uneven runs, doubled pixels, jaggies.
 9. **Inconsistent light.** Direction that moves across the sprite or frames.
+9b. **A head built flat** (28 px and up): an egg outline with features printed
+    on it, no front/side break, eyes without a socket under the brow, a 3/4
+    head that is a front head slid sideways, a cranium cut off behind the ear,
+    hair as a helmet or a neck hung from the chin. Name the parameters for
+    `draw` op `headArmature` that would rebuild it (archetype, yaw, pitch,
+    sliders) and cite `rules://32-heads-and-faces`.
 10. **Animation: volume drift, height drift, uniform timing, no anticipation.**
 
 ## Output
