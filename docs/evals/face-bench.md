@@ -243,3 +243,24 @@ Next: the shadow step shrinks to a core shadow at the far contour and under
 the jaw (`v < 0.32`, 15 % → under 14 % of the lower face incl. sockets);
 `rules/38` and `draw` say the masses are the only skin shading (no second set
 of shadow polygons) and that short hair rises 1–3 px above the shell.
+
+### 2026-10-29, eleventh pass — core shadow only
+
+Rows: npm 0.8.2 · v12 · v13 (shadow step narrowed to a core shadow; masses are
+the only skin shading; short hair rises above the shell).
+
+![48 px](face-bench/2026-10-29-v13-48px.png)
+![96 px](face-bench/2026-10-29-v13-96px.png)
+
+- Adventurer front and the anime pair: level with the before row.
+- Still losing: the captain (grey hair and beard still bands hugging the
+  skull and jaw) and the adventurer 3/4 (a hard-edged block on the far cheek).
+- The one difference common to every column: every before-row head is closed
+  by a dark outline around skin, hair and shoulders; the branch heads have
+  none, so skin melts into hair and backdrop and the faces read pale and soft.
+  `rules/38` step 9 asked for it, the agent never drew it.
+
+Next: the armature closes the skin with a selective outline by default with
+`masses` (darkest step away from the light, next step on the lit side, neck
+bottom open); `rules/38` and `draw` ask the agent to carry the line around the
+hair, beard and shoulders.
