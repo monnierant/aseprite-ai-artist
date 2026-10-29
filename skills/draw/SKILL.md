@@ -40,11 +40,11 @@ sends it back.
 
 ```
 draw ops=[{ kind:"headArmature", rect:{x:16,y:6,width:48,height:48},
-            archetype:"adventure", yaw:-35, pitch:0,
+            archetype:"adventure", yaw:-25, pitch:0,
             sliders:{ jawWidth:0.2 }, planes:{ ramp:["#3b2027","#7a4040","#b8705a","#e0a07a","#f6d2b0"] } }]
 ```
 
-`rect` is the head box (hair included, neck excluded); `yaw` −30…−40 is a 3/4
+`rect` is the head box (hair included, neck excluded); `yaw` −20…−25 is a portrait 3/4 (−35 and more a strong turn)
 turned toward an upper-left light, 0 is front; `pitch` > 0 is seen from below.
 It writes a `guide` layer and a lit `head-planes` layer in one undo step and
 returns `armature`: eye footprints, brow, nose base, mouth, chin, hairline,

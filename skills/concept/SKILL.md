@@ -145,7 +145,7 @@ op `headArmature`, read from the reference, so the drawing stage builds the
 head instead of guessing it:
 
 ```json
-"head": { "rect": [8, 4, 56, 52], "archetype": "adventure", "yaw": -30, "pitch": 10, "roll": 0,
+"head": { "rect": [8, 4, 56, 52], "archetype": "adventure", "yaw": -25, "pitch": 10, "roll": 0,
           "sliders": { "jawWidth": 0.4, "browRidge": 0.3, "age": 0 } }
 ```
 
