@@ -352,3 +352,13 @@ test("a front realistic head is about two thirds as wide as it is tall", () => {
   const ratio = (Math.max(...xs) - Math.min(...xs)) / (Math.max(...ys) - Math.min(...ys));
   assert.ok(ratio >= 0.66 && ratio <= 0.78, `width/height ${ratio.toFixed(2)} reads as an egg`);
 });
+
+test("a 48 px eye opens to about 7x5 with a skin row under the brow", () => {
+  const { armature } = buildHeadArmature({ rect: { x: 0, y: 0, width: 48, height: 48 }, archetype: "adventure", yaw: -25, ramp: ["#000000", "#ffffff"] });
+  for (const e of armature.eyes) {
+    const xs = e.footprint.map((p) => p[0]), ys = e.footprint.map((p) => p[1]);
+    const w = Math.max(...xs) - Math.min(...xs) + 1, h = Math.max(...ys) - Math.min(...ys) + 1;
+    assert.ok(w >= 6 && h >= 5, `${e.side} eye opens ${w}x${h}, a slit`);
+    assert.ok(Math.min(...ys) - Math.max(...e.browOverhang.map((p) => p[1])) >= 2, `${e.side} brow rests on the lid`);
+  }
+});

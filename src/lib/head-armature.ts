@@ -976,7 +976,10 @@ export function buildHeadArmature(input: ArmatureInput): ArmatureResult {
     let upper: Vector3[] = [], lower: Vector3[] = [], kind: ArmatureEye["kind"];
     if (props.eye.kind === "sphere") {
       kind = "sphere";
-      const r = props.eye.radius;
+      // Below ~72 px a true-to-life lid opening is 5×4 px and reads as a
+      // sleepy slit; pixel portraits open the eye up to 1.4× instead (48 px →
+      // about 7×5, as rules://38-portraits asks). The ball stays in place.
+      const r = props.eye.radius * clamp(72 / rect.height, 1, 1.4);
       const lid = (phiDeg: number, vDeg: number): Vector3 => {
         const phi = (phiDeg * Math.PI) / 180, vv = (vDeg * Math.PI) / 180;
         // Slight outward rotation: eyes look forward but the socket faces a little sideways.
@@ -1011,7 +1014,10 @@ export function buildHeadArmature(input: ArmatureInput): ArmatureResult {
     for (let i = 0; i <= 12; i++) {
       const x = c.x + lerp(-halfW, halfW, i / 12);
       const arch = 1 - ((i / 12) * 2 - 1) ** 2;
-      const y = model.y.brow - 0.012 * arch - (props.eye.kind === "decal" ? props.eye.height * 0.35 : 0);
+      // Keep one skin row between brow and upper lid at small sizes: a brow
+      // resting on the lid reads as a heavy, half-closed eye.
+      const lift = props.eye.kind === "sphere" && rect.height < 72 ? 1.2 / rect.height : 0;
+      const y = model.y.brow - 0.012 * arch - lift - (props.eye.kind === "decal" ? props.eye.height * 0.35 : 0);
       const p = surfacePoint(x, y);
       if (p) browPts.push(p);
     }
