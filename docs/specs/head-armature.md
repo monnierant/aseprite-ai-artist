@@ -22,8 +22,14 @@ Vocabulaire : [CONTEXT.md](../../CONTEXT.md).
 | `planes` | objet optionnel | absent | bloc-in des plans, voir ci-dessous |
 
 `planes` : `{ light: {x,y,z} | "upper-left" | "upper-right" | "front" | …,
-ramp: [couleurs du sombre au clair], layer: "head-planes" }`. Chaque plan
-reçoit la couleur de la rampe la plus proche de son éclairement lambertien.
+ramp: [couleurs du sombre au clair], layer: "head-planes", values: "masses" | "planes" }`.
+`values: "masses"` (défaut) groupe les plans en trois masses — lumière,
+demi-teinte, ombre, les cavités rejoignant l'ombre — sur les crans intérieurs
+de la rampe, les extrêmes restant libres pour les accents : c'est le départ de
+la peau finie. `values: "planes"` donne à chaque plan le cran de son
+éclairement lambertien : une étude de construction, jamais une peau finie
+(des facettes laissées dans un visage fini lisent comme un masque — constat du
+banc visage).
 `paletteLock` s'applique comme pour les autres ops.
 
 Le niveau de plans se déduit de `rect.height` : ≥ 80 → 9, 40–79 → 6 + dessous,

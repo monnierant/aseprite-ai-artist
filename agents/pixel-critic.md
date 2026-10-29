@@ -77,6 +77,10 @@ In descending order of how much it costs the user:
     hair as a helmet or a neck hung from the chin. Name the parameters for
     `draw` op `headArmature` that would rebuild it (archetype, yaw, pitch,
     sliders) and cite `rules://32-heads-and-faces`.
+9c. **A faceted face** (28 px and up): the construction planes left in the
+    finished skin — hard-edged patches of four or more skin values, a
+    rectangle for a nose, a seam down the cheek. The skin holds light,
+    half-tone and shadow masses; name `planes.values:"masses"` as the fix.
 10. **Animation: volume drift, height drift, uniform timing, no anticipation.**
 
 ## Output

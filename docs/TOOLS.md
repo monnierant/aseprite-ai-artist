@@ -98,8 +98,10 @@ refuses with `too_small`), `archetype` (`realistic` `adventure` `anime`
 `chibi`), `sliders` (`jawWidth` `faceLength` `browRidge` `cheekbones` `age`
 `chin`, each −1…1), `guideLayer` (default `guide`), `guideColor` and
 `featureColor` (default: the two palette entries furthest from the skin ramp),
-`hair`, `neck`, and `planes: { ramp, light, layer }` for the lit block-in
-(default layer `head-planes`). The plane level follows the height: ≥ 80 px nine
+`hair`, `neck`, and `planes: { ramp, light, layer, values }` for the lit
+block-in (default layer `head-planes`; `values: "masses"`, the default, gives
+light, half-tone and shadow masses to keep as the skin, `"planes"` one step
+per plane for a construction study). The plane level follows the height: ≥ 80 px nine
 planes, 40–79 six plus the underside of the jaw, 28–39 three plus the orbit.
 The geometry runs on the server; Aseprite receives plain `pixels` ops through
 `draw.passes`, which paints each layer (created when missing) inside one
