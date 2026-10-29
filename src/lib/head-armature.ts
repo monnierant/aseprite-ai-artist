@@ -630,11 +630,25 @@ function cleanPlaneValues(values: Map<number, number>, minArea: number, key: (x:
  * light, half-tone and shadow, with the darkest and lightest steps left for
  * accents. Faceted plane steps left in the final skin read as a mask.
  */
-function massIndex(stretched: number, steps: number): number {
+function massIndex(type: string, lambert: number, archetype: Archetype, steps: number): number {
   const at = (t: number) => clamp(Math.round(t * (steps - 1)), 0, steps - 1);
-  if (stretched >= 0.62) return at(0.75);
-  if (stretched >= 0.3) return at(0.5);
-  return at(0.25);
+  const light = at(0.75), half = at(0.5), shadow = at(0.25);
+  // Cel-shaded archetypes: one skin value and one shadow. Only the planes that
+  // wrap around the head (side, temple, back), the neck and the underside of
+  // the jaw take the shadow; the face itself stays one flat light, and the
+  // decal eyes get no orbit.
+  if (archetype === "anime" || archetype === "chibi") {
+    if (type === "under" || type === "neck") return half;
+    if ((type === "cheekSide" || type === "temple" || type === "back") && lambert < 0.2) return half;
+    return light;
+  }
+  if (type === "socket" || type === "under" || type === "neck") return shadow;
+  // Wrapped light: a plane still facing the viewer but turned from the light
+  // is a half-tone, not a shadow — the shadow is the side of the head.
+  const wrapped = (lambert + 0.35) / 1.35;
+  if (wrapped >= 0.62) return light;
+  if (wrapped >= 0.36 || type === "cheekFront" || type === "front" || type === "muzzle" || type === "chin") return half;
+  return shadow;
 }
 
 /** Outline plus interior of a closed pixel polygon (even-odd scanline fill). */
@@ -849,7 +863,7 @@ export function buildHeadArmature(input: ArmatureInput): ArmatureResult {
     const occluded = OCCLUSION[a.type] !== undefined && a.type !== "ear";
     const floor = occluded ? 0 : 0.3;
     const rampIndex = input.values === "masses"
-      ? massIndex(occluded ? 0 : stretched, steps)
+      ? massIndex(a.type, Math.max(0, dot(norm(a.n), lightVec)), archetype, steps)
       : clamp(Math.round((floor + (1 - floor) * stretched) * (steps - 1)), 0, steps - 1);
     indexByInstance.set(a.name, rampIndex);
     planes.push({

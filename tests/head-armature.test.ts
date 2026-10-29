@@ -307,3 +307,22 @@ test("the headArmature op paints masses by default", () => {
   const op = headArmatureOp.parse({ kind: "headArmature", rect: { x: 0, y: 0, width: 64, height: 64 }, planes: { ramp: ["#000000", "#444444", "#888888", "#bbbbbb", "#ffffff"] } });
   assert.equal(op.planes?.values, "masses");
 });
+
+test("cel-shaded archetypes get two skin values and no orbit in masses", () => {
+  const ramp = ["#3b2027", "#7a4040", "#b8705a", "#e0a07a", "#f6d2b0"];
+  for (const archetype of ["anime", "chibi"] as const) {
+    const { armature, raster } = buildHeadArmature({ rect: { x: 0, y: 0, width: 96, height: 96 }, archetype, yaw: 0, ramp, values: "masses" });
+    assert.ok(new Set(raster.planes.map((p) => p.rampIndex)).size <= 2, `${archetype} uses more than two values`);
+    for (const p of armature.planes.filter((q) => q.type === "socket" || q.type === "cheekFront" || q.type === "front")) {
+      assert.equal(p.rampIndex, 3, `${archetype} ${p.name} is shaded`);
+    }
+  }
+});
+
+test("a front head in masses keeps the face out of the shadow step", () => {
+  const ramp = ["#3b2027", "#7a4040", "#b8705a", "#e0a07a", "#f6d2b0"];
+  const { armature } = buildHeadArmature({ rect: { x: 0, y: 0, width: 96, height: 96 }, yaw: 0, ramp, values: "masses" });
+  for (const p of armature.planes.filter((q) => ["front", "cheekFront", "muzzle", "chin"].includes(q.type))) {
+    assert.ok(p.rampIndex >= 2, `${p.name} fell into the shadow`);
+  }
+});
