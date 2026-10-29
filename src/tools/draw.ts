@@ -66,6 +66,10 @@ export const headArmatureOp = z.object({
         .enum(["masses", "planes"])
         .default("masses")
         .describe("'masses': light, half-tone and shadow masses, the start of the finished skin. 'planes': one ramp step per plane, a construction study only."),
+      outline: z
+        .boolean()
+        .optional()
+        .describe("Selective outline on the skin silhouette (darkest step away from the light, next step on the lit side). Default: on with 'masses', off with 'planes'."),
     })
     .optional()
     .describe("When set, every visible plane is filled with the ramp colour of its lit value."),
@@ -233,6 +237,7 @@ export function compileHeadArmature(op: HeadArmatureOp, palette: readonly string
     rect: op.rect, archetype: op.archetype, yaw: op.yaw, pitch: op.pitch, roll: op.roll,
     sliders: op.sliders, hair: op.hair, neck: op.neck,
     light: op.planes?.light, ramp: op.planes?.ramp, values: op.planes?.values ?? "masses",
+    outline: op.planes?.outline ?? (op.planes?.values ?? "masses") === "masses",
   });
   const picks = contrastingColors(palette, op.planes?.ramp ?? []);
   const guideColor = op.guideColor ?? picks[0] ?? "#2a6fdb";

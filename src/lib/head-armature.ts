@@ -44,6 +44,12 @@ export interface ArmatureInput {
    * cavities join the shadow — the start of a finished skin. Default "planes".
    */
   values?: "planes" | "masses";
+  /**
+   * Selective outline on the skin silhouette: the darkest ramp step on the
+   * side away from the light, the next step on the lit side. The neck keeps
+   * its open bottom edge (the collar covers it). Default false.
+   */
+  outline?: boolean;
 }
 
 export interface ArmatureEye {
@@ -1170,6 +1176,28 @@ export function buildHeadArmature(input: ArmatureInput): ArmatureResult {
     Math.max(2, Math.round((input.rect.height * input.rect.height) / 400)),
     key,
   );
+  if (input.outline && steps >= 3) {
+    // Without a contour the masses melt into the hair and the backdrop; the
+    // before-row portraits all carry one. Selective: dark where the form turns
+    // from the light, one step lighter where it faces it.
+    const rim = new Map<number, number>();
+    for (const k of cleaned.keys()) {
+      const [x, y] = unkey(k);
+      const isNeck = acc.get(pixelInstance.get(k)!)?.type === "neck";
+      let ox = 0, oy = 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        if (cleaned.has(key(x + dx, y + dy))) continue;
+        if (isNeck && dy === 1) continue;
+        ox += dx; oy += dy;
+      }
+      if (ox === 0 && oy === 0) {
+        const open = ([[1, 0], [-1, 0], [0, 1], [0, -1]] as const).some(([dx, dy]) => !cleaned.has(key(x + dx, y + dy)) && !(isNeck && dy === 1));
+        if (!open) continue;
+      }
+      rim.set(k, ox * lightVec.x + 0.5 * oy * lightVec.y > 0 ? 1 : 0);
+    }
+    for (const [k, idx] of rim) cleaned.set(k, idx);
+  }
   for (const [k, rampIndex] of cleaned) {
     const [x, y] = unkey(k);
     planePixels.push({ x, y, rampIndex });

@@ -391,3 +391,18 @@ test("the shadow step stays a core shadow at the far contour, not a block on the
     assert.ok(dark < 0.14, `${archetype} yaw ${yaw}: ${dark.toFixed(2)} of the lower face is on the shadow step`);
   }
 });
+
+test("the headArmature op closes the masses with a selective outline", () => {
+  const ramp = ["#3b2027", "#7a4040", "#b8705a", "#e0a07a", "#f6d2b0"];
+  const { raster } = buildHeadArmature({ rect: { x: 0, y: 0, width: 96, height: 96 }, archetype: "adventure", ramp, values: "masses", outline: true });
+  const at = new Map(raster.planes.map((p) => [`${p.x},${p.y}`, p.rampIndex]));
+  const rows = [...new Set(raster.planes.map((p) => p.y))].filter((y) => y >= 30 && y <= 75);
+  for (const y of rows) {
+    const xs = raster.planes.filter((p) => p.y === y).map((p) => p.x);
+    const l = Math.min(...xs), r = Math.max(...xs);
+    assert.ok(at.get(`${r},${y}`) === 0, `row ${y}: the shadow-side edge is not on the darkest step`);
+    assert.ok((at.get(`${l},${y}`) ?? 9) <= 1, `row ${y}: the lit-side edge is open`);
+  }
+  const { raster: study } = buildHeadArmature({ rect: { x: 0, y: 0, width: 96, height: 96 }, archetype: "adventure", ramp, values: "planes" });
+  assert.ok(!study.planes.some((p) => p.rampIndex === 0 && p.y < 40), "the outline leaks into the plane study");
+});
