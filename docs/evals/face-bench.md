@@ -8,11 +8,11 @@ The verdict is a person looking at the sheet, not the `validate` score.
 
 | # | Archetype | View | `headArmature` | Brief |
 |---|---|---|---|---|
-| 1 | `realistic` | 3/4 | `yaw: -35` | A grey-haired ship captain, square jaw, heavy brow, short beard line, lit from the upper left. |
-| 2 | `realistic` | 3/4, seen from below | `yaw: -30, pitch: 20` | The same captain looking up at a mast: the jaw underside shows, the feature lines bow upward. |
-| 3 | `adventure` | 3/4 | `yaw: -35` | Remake of MON-574: a young adventurer with a ponytail and a scar over the left brow, bust portrait. |
+| 1 | `realistic` | 3/4 | `yaw: -25` | A grey-haired ship captain, square jaw, heavy brow, short beard line, lit from the upper left. |
+| 2 | `realistic` | 3/4, seen from below | `yaw: -25, pitch: 20` | The same captain looking up at a mast: the jaw underside shows, the feature lines bow upward. |
+| 3 | `adventure` | 3/4 | `yaw: -25` | Remake of MON-574: a young adventurer with a ponytail and a scar over the left brow, bust portrait. |
 | 4 | `adventure` | front | `yaw: 0` | The same adventurer, front, neutral expression, for a dialogue box. |
-| 5 | `anime` | 3/4 | `yaw: -30` | A cheerful mage girl with long bangs and large decal eyes, slight smile. |
+| 5 | `anime` | 3/4 | `yaw: -25` | A cheerful mage girl with long bangs and large decal eyes, slight smile. |
 | 6 | `anime` | front | `yaw: 0` | The same mage, front, surprised (brows up, eyes wide, O mouth). |
 
 `chibi` is out of the bench: its construction is a decal on a ball, not a
@@ -103,3 +103,22 @@ Rows: npm 0.8.2 · v4 · v5 (hair shell as inner limit, beard on the jaw planes,
 
 Next: a wider cranium and face (front realistic head ≈ 0.7 wide for 1 tall,
 eyes one eye-width apart), then run the bench again.
+
+### 2026-10-29, fourth pass — wider heads
+
+Rows: npm 0.8.2 · v5 · v6 (wider cranium and face, eyes further apart).
+
+![48 px](face-bench/2026-10-29-v6-48px.png)
+![96 px](face-bench/2026-10-29-v6-96px.png)
+
+- The captain gets his width back: square jaw, the beard is a mass on the jaw
+  and chin, the heavy brow reads. The front views hold against the before row.
+- The 3/4 heads look over-turned. Measured on the armature: at yaw −35 the
+  nose sits 0.17 of the head width from the far contour, a strong turn, not a
+  portrait 3/4 (about 0.25, reached at yaw −25). The rules said ±30–40°, so the
+  agent always picked −35.
+- The heavy shadow on the anime 3/4 at 48 px is the agent's paint, not the
+  armature: every anime plane except the neck is on the light step.
+
+Next: a portrait 3/4 is yaw ±20–25° (rules 32/38, `draw`, `concept`,
+templates, bench table), then run the bench again.
