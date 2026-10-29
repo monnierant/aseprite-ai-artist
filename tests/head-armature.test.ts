@@ -345,3 +345,10 @@ test("modelled masses bend the terminator instead of following plane edges", () 
   assert.ok(rows >= 40, `the terminator spans only ${rows} rows`);
   assert.ok(unchanged / rows <= 0.6, `the terminator stays straight on ${unchanged}/${rows} rows`);
 });
+
+test("a front realistic head is about two thirds as wide as it is tall", () => {
+  const { armature } = buildHeadArmature({ rect: { x: 0, y: 0, width: 96, height: 96 }, archetype: "realistic", yaw: 0, ramp: ["#000000", "#ffffff"] });
+  const xs = armature.silhouette.map((p) => p[0]), ys = armature.silhouette.map((p) => p[1]);
+  const ratio = (Math.max(...xs) - Math.min(...xs)) / (Math.max(...ys) - Math.min(...ys));
+  assert.ok(ratio >= 0.66 && ratio <= 0.78, `width/height ${ratio.toFixed(2)} reads as an egg`);
+});

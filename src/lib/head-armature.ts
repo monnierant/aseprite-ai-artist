@@ -189,14 +189,14 @@ interface Proportions {
 
 const ARCHETYPES: Record<Archetype, Proportions> = {
   realistic: {
-    cranium: v(1, 1, 1), faceLength: 1, faceWidth: 1, jawWidth: 1, chinWidth: 1, nose: 1,
+    cranium: v(1, 1, 1), faceLength: 1, faceWidth: 1.08, jawWidth: 1, chinWidth: 1, nose: 1,
     browRidge: 0, cheekbones: 0, chinDrop: 0,
-    eye: { kind: "sphere", radius: 0.058, width: 0, height: 0, separation: 0.115 },
+    eye: { kind: "sphere", radius: 0.058, width: 0, height: 0, separation: 0.13 },
   },
   adventure: {
-    cranium: v(1.06, 1.06, 1.02), faceLength: 0.9, faceWidth: 0.97, jawWidth: 0.94, chinWidth: 0.95, nose: 0.75,
+    cranium: v(1.06, 1.06, 1.02), faceLength: 0.9, faceWidth: 1.05, jawWidth: 0.94, chinWidth: 0.95, nose: 0.75,
     browRidge: 0, cheekbones: 0, chinDrop: 0,
-    eye: { kind: "sphere", radius: 0.066, width: 0, height: 0, separation: 0.118 },
+    eye: { kind: "sphere", radius: 0.066, width: 0, height: 0, separation: 0.13 },
   },
   anime: {
     cranium: v(1.1, 1.12, 1.04), faceLength: 0.8, faceWidth: 0.92, jawWidth: 0.78, chinWidth: 0.55, nose: 0.45,
@@ -245,7 +245,7 @@ function proportions(archetype: Archetype, sliders: Sliders): Proportions {
 const BROW_Y = -0.06;
 const CHIN_Y = 0.5;
 const CRANIUM_CENTER = v(0, -0.12, -0.04);
-const CRANIUM_RADII = v(0.3, 0.38, 0.4);
+const CRANIUM_RADII = v(0.33, 0.38, 0.38);
 
 type Tag = "brow" | "nose" | "cheekbone" | "chin";
 interface RigPoint { p: Vector3; tags?: Tag[] }
