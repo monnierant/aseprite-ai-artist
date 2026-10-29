@@ -67,3 +67,22 @@ branch with `values: "masses"` (after v2). One run per cell, no retries.
 Verdict: **not passed**. ADR-0013 stays *proposed*. Next steps: two values
 for `anime`/`chibi`, a softer half-tone edge for `realistic`/`adventure`,
 then run the bench again.
+
+### 2026-10-29, second pass — wrapped light, cel masses, smoothed terminator
+
+Rows: npm 0.8.2 · v3 (wrapped light, two cel values for `anime`/`chibi`) ·
+v4 (per-pixel smoothed masses for `realistic`/`adventure`). Brief 4 at 48 px
+timed out once (agent stalled, 30 min) and was run again.
+
+![48 px](face-bench/2026-10-29-v4-48px.png)
+![96 px](face-bench/2026-10-29-v4-96px.png)
+
+- The facets and the seam down the face are gone; the anime faces are flat
+  again, and the front views (briefs 4 and 6) now hold up against the before row.
+- 3/4 and low angles keep the gain in construction, at both sizes.
+- The remaining gap is character, not volume: the hair fills the armature's
+  hair shell exactly and reads as a swim cap, and the captain's beard became
+  a thin band along the jaw. The before row wins on hair and beard.
+
+Verdict: **not passed yet**, closer. Next: the hair shell becomes the inner
+limit of the hair, never its outline (rules 32/38, `pixel-critic` 9d).
