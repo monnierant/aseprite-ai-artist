@@ -673,7 +673,8 @@ OHHHHHHSeOOeSSSSWwESSO.....OHHHHHHHHHHHHSSSSSSSkkkkkkkSSO...
    `browOverhang`; far eye only if `visible`), then mouth on the `mouth` line, nose on its
    planes, ears from `ears` (`rules://33-eyes-and-expressions`). `look` op `ascii` with a
    `region` to check gaps and parity.
-6. Hair on its own layer inside `hairShell`, hairline on `landmarks.hairline`
+6. Hair on its own layer: `hairShell` is its inner limit, never its outline — the
+   silhouette breaks it with locks, a part and volume on top; hairline on `landmarks.hairline`
    (`rules://35-hair-and-clothing`); neck on `neck`.
 7. Shade with hue shifts, outline the silhouette only (`rules://04-outlines-and-edges`), hide
    the guide; `look` op `preview`, then `validate`.
@@ -704,7 +705,8 @@ OHHHHHHSeOOeSSSSWwESSO.....OHHHHHHHHHHHHSSSSSSSkkkkkkkSSO...
 - The cranium is one ovoid; in 3/4 and profile the back of the skull shows behind the ear.
 - A visible front/side break; the orbit is the darkest skin value; brow overhangs the lids.
 - Feature lines curve with the turn and the pitch; far eye narrower in a turn.
-- Hair shell 1–3 px off the cranium, stops at the ears; neck under the skull, not the chin.
+- Hair sits 1–3 px off the cranium and breaks the shell's outline (no swim cap); neck under
+  the skull, not the chin.
 - Plane count fits the size; one light direction; eyes the highest contrast on the head.
 - Front view landmarks inside the ranges in rule 12; ≥2 px between eyes; parity respected.
 - One deliberate asymmetry on an otherwise symmetric face.

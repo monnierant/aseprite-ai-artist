@@ -25,7 +25,7 @@ recipes: `rules://33-eyes-and-expressions`.
    one defining feature (big nose, heavy lids, strong brow) and push the face off symmetry
    (parting, one brow a row higher, unequal highlights).
 4. **Build order:** armature (`headArmature` with `planes`) → merge noisy planes on a head
-   layer, keep the front/side break → hair inside the shell as flat masses → neck and
+   layer, keep the front/side break → hair masses that use the shell as their inner limit and break its silhouette → neck and
    shoulders → eyes in their sockets last → highlights, anti-aliasing, selective outline. If
    the block-in does not read as a turned head at 1×, change the armature parameters; the
    final cannot fix it.
@@ -39,7 +39,12 @@ recipes: `rules://33-eyes-and-expressions`.
    or lower (measured on a published sprite palette). Light patches: forehead, cheek apple, nose
    bridge, chin. Shadow: the far cheek 1–2 px, under the hair edge 1 px, under the chin. From
    32 px, forehead warmer, mid-face rosier, lower face cooler (`rules://20-color-for-pixel-art`).
-7. **Hair.** Flat mass first, then flow lines from the part or cowlick, 3–4 tones with the
+7. **Hair.** The shell is the skull the hair sits on, not the hair's outline: a hair mass
+   that fills the shell exactly reads as a swim cap. Give it an asymmetric silhouette —
+   locks crossing the hairline, a notch at the part, volume above the shell on top, tufts
+   breaking the outline over the ears — and keep 1–2 px of skin visible at the temple.
+   A beard is a mass on the jaw planes that extends the chin silhouette, with a broken
+   edge on the cheek; never a band along the jaw line. Flat mass first, then flow lines from the part or cowlick, 3–4 tones with the
    highlight band following the skull curve and the lightest tone on top; strands ≥2 px wide;
    the hairline is a colour edge, not an outline (`rules://35-hair-and-clothing`).
 8. **Eyes.** 7×5 at 48 px, 11×6 at 64: dark lid line, darker upper iris, pupil, catch-light,
