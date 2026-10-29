@@ -253,3 +253,41 @@ test("headArmature op compiles to a plane pass under a guide pass with palette-p
 test("contrastingColors puts the colour furthest from the ramp first", () => {
   assert.equal(contrastingColors(["#e0a07a", "#29adff", "#b8705a"], RAMP)[0], "#29adff");
 });
+
+test("the plane block-in has no specks: every value cluster reaches the minimum area", () => {
+  const height = 48;
+  const { raster } = buildHeadArmature({ rect: { x: 0, y: 0, width: height, height }, yaw: -35, ramp: ["#000000", "#555555", "#999999", "#cccccc", "#ffffff"] });
+  const value = new Map(raster.planes.map((p) => [`${p.x},${p.y}`, p.rampIndex]));
+  const seen = new Set<string>();
+  const minArea = Math.max(2, Math.round((height * height) / 400));
+  for (const start of value.keys()) {
+    if (seen.has(start)) continue;
+    const v0 = value.get(start);
+    const stack = [start];
+    let area = 0;
+    seen.add(start);
+    while (stack.length) {
+      const [x, y] = stack.pop()!.split(",").map(Number) as [number, number];
+      area++;
+      for (const n of [`${x + 1},${y}`, `${x - 1},${y}`, `${x},${y + 1}`, `${x},${y - 1}`]) {
+        if (!seen.has(n) && value.get(n) === v0) { seen.add(n); stack.push(n); }
+      }
+    }
+    assert.ok(area >= minArea, `cluster of ${area} px at ${start} is below ${minArea}`);
+  }
+});
+
+test("front ears hug the head instead of sticking out as wings", () => {
+  const height = 96;
+  const { armature } = buildHeadArmature({ rect: { x: 0, y: 0, width: height, height }, yaw: 0, ramp: ["#000000", "#ffffff"] });
+  const head = armature.planes.filter((p) => p.type !== "ear" && !p.type.startsWith("neck"));
+  const left = Math.min(...head.map((p) => p.bounds.x));
+  const right = Math.max(...head.map((p) => p.bounds.x + p.bounds.width - 1));
+  const ears = armature.planes.filter((p) => p.type === "ear");
+  assert.equal(ears.length, 2, "both ears show from the front");
+  for (const ear of ears) {
+    const out = ear.side === "left" ? left - ear.bounds.x : ear.bounds.x + ear.bounds.width - 1 - right;
+    assert.ok(out <= Math.round(height * 0.03), `${ear.name} sticks out ${out} px past the cranium`);
+    assert.ok(ear.bounds.height <= Math.round(height * 0.18), `${ear.name} is ${ear.bounds.height} px tall`);
+  }
+});

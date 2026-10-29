@@ -213,7 +213,7 @@ function proportions(archetype: Archetype, sliders: Sliders): Proportions {
   const p: Proportions = { ...base, cranium: { ...base.cranium }, eye: { ...base.eye } };
   p.jawWidth *= 1 + 0.25 * s("jawWidth");
   p.faceLength *= 1 + 0.15 * s("faceLength");
-  p.browRidge += 0.03 * s("browRidge");
+  p.browRidge += 0.02 * s("browRidge");
   p.cheekbones += 0.025 * s("cheekbones");
   const age = s("age");
   if (age < 0) {
@@ -397,12 +397,22 @@ function buildModel(archetype: Archetype, sliders: Sliders, withNeck: boolean): 
     const y = mapY(p.y);
     const k = Math.sqrt(Math.max(0.05, 1 - ((y - craniumCenter.y) / craniumRadii.y) ** 2));
     const sideX = craniumRadii.x * k;
-    return v(sideX + (p.x - 0.27) * 1.3, y, p.z);
+    return v(sideX + (p.x - 0.29) * 0.6, y, p.z);
   });
   const earLeft = earRight.map(mirror);
+  // The ear is a wedge rooted inside the head, not a flat card: seen from the
+  // front a card is edge-on and floats as a thin arc beside the cheek.
+  const earRoot = (ring: Vector3[]) => ring.map((p) => v(p.x * 0.72, p.y, p.z));
   for (const [ring, side] of [[earRight, "right"], [earLeft, "left"]] as const) {
+    const root = earRoot(ring);
     const c = centroidOf(ring);
-    for (let i = 0; i < ring.length; i++) pushTri(c, ring[i]!, ring[(i + 1) % ring.length]!, "ear", side, v(0, c.y, c.z));
+    const solidCenter = centroidOf([...ring, ...root]);
+    for (let i = 0; i < ring.length; i++) {
+      const j = (i + 1) % ring.length;
+      pushTri(c, ring[i]!, ring[j]!, "ear", side, solidCenter);
+      pushTri(ring[i]!, root[i]!, root[j]!, "ear", side, solidCenter);
+      pushTri(ring[i]!, root[j]!, ring[j]!, "ear", side, solidCenter);
+    }
   }
 
   // Cranium ovoid.
@@ -526,6 +536,9 @@ export const LEVEL_PLANES: Record<PlaneLevel, readonly string[]> = {
 
 const SPLIT_BY_SIDE = new Set(["temple", "back", "cheekSide", "side", "socket", "nose", "cheekFront", "cheek", "jaw", "ear", "neck"]);
 const OCCLUSION: Record<string, number> = { socket: 0.8, under: 0.72, neck: 0.85, ear: 0.92 };
+// Planes the hair covers: toned down so the bare block-in does not read as a
+// shiny bald dome, without being treated as cavities.
+const UNDER_HAIR: Record<string, number> = { top: 0.82, back: 0.9 };
 
 const LIGHTS: Record<LightPreset, Vector3> = {
   "upper-left": v(-0.75, -0.6, 0.6),
@@ -560,6 +573,49 @@ function polylinePixels(points: readonly Point[], closed = false): Point[] {
   if (points.length === 1) out.push(points[0]!);
   for (let i = 0; i + 1 < points.length; i++) linePixels(points[i]!, points[i + 1]!, out);
   if (closed && points.length > 2) linePixels(points[points.length - 1]!, points[0]!, out);
+  return out;
+}
+
+/**
+ * Pixel cleanup of the plane block-in: value clusters smaller than `minArea`
+ * join their most common neighbour, then 1-px teeth (a pixel with three or
+ * four 4-neighbours of one other value) are filed off. Plane borders are
+ * rasterised edges; without this they break into staircases and specks that
+ * read as noise at 48 px.
+ */
+function cleanPlaneValues(values: Map<number, number>, minArea: number, key: (x: number, y: number) => number): Map<number, number> {
+  const out = new Map(values);
+  const coords = new Map<number, Point>();
+  for (const k of values.keys()) coords.set(k, [(k % 16384) - 4096, Math.floor(k / 16384) - 4096]);
+  const nbrs = (k: number): number[] => {
+    const [x, y] = coords.get(k)!;
+    return [key(x + 1, y), key(x - 1, y), key(x, y + 1), key(x, y - 1)].filter((n) => out.has(n));
+  };
+  const seen = new Set<number>();
+  for (const start of values.keys()) {
+    if (seen.has(start)) continue;
+    const value = out.get(start)!;
+    const comp = [start];
+    seen.add(start);
+    for (let i = 0; i < comp.length; i++) {
+      for (const n of nbrs(comp[i]!)) if (!seen.has(n) && out.get(n) === value) { seen.add(n); comp.push(n); }
+    }
+    if (comp.length >= minArea) continue;
+    const votes = new Map<number, number>();
+    for (const k of comp) for (const n of nbrs(k)) {
+      const nv = out.get(n)!;
+      if (nv !== value) votes.set(nv, (votes.get(nv) ?? 0) + 1);
+    }
+    if (!votes.size) continue;
+    const best = [...votes].sort((a, b) => b[1] - a[1])[0]![0];
+    for (const k of comp) out.set(k, best);
+  }
+  for (const k of values.keys()) {
+    const ns = nbrs(k);
+    const counts = new Map<number, number>();
+    for (const n of ns) counts.set(out.get(n)!, (counts.get(out.get(n)!) ?? 0) + 1);
+    for (const [nv, c] of counts) if (nv !== out.get(k) && c >= 3) out.set(k, nv);
+  }
   return out;
 }
 
@@ -763,7 +819,7 @@ export function buildHeadArmature(input: ArmatureInput): ArmatureResult {
   const raw = new Map<string, number>();
   for (const a of acc.values()) {
     const lambert = Math.max(0, dot(norm(a.n), lightVec));
-    raw.set(a.name, (ambient + (1 - ambient) * lambert) * (OCCLUSION[a.type] ?? 1));
+    raw.set(a.name, (ambient + (1 - ambient) * lambert) * (OCCLUSION[a.type] ?? 1) * (UNDER_HAIR[a.type] ?? 1));
   }
   const rawValues = [...raw.values()];
   const vMin = Math.min(...rawValues), vMax = Math.max(...rawValues);
@@ -999,9 +1055,14 @@ export function buildHeadArmature(input: ArmatureInput): ArmatureResult {
   if (chinPt) features.push(pix(chinPt));
 
   const planePixels: RasterLayers["planes"] = [];
-  for (const [k, name] of pixelInstance) {
+  const cleaned = cleanPlaneValues(
+    new Map([...pixelInstance].map(([k, name]) => [k, indexByInstance.get(name) ?? 0])),
+    Math.max(2, Math.round((input.rect.height * input.rect.height) / 400)),
+    key,
+  );
+  for (const [k, rampIndex] of cleaned) {
     const [x, y] = unkey(k);
-    planePixels.push({ x, y, rampIndex: indexByInstance.get(name) ?? 0 });
+    planePixels.push({ x, y, rampIndex });
   }
 
   const uniq = (pts: Point[]) => {
