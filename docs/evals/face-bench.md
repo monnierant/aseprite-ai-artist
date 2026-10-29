@@ -86,3 +86,20 @@ timed out once (agent stalled, 30 min) and was run again.
 
 Verdict: **not passed yet**, closer. Next: the hair shell becomes the inner
 limit of the hair, never its outline (rules 32/38, `pixel-critic` 9d).
+
+### 2026-10-29, third pass — hair breaks the shell
+
+Rows: npm 0.8.2 · v4 · v5 (hair shell as inner limit, beard on the jaw planes,
+`pixel-critic` 9d).
+
+![48 px](face-bench/2026-10-29-v5-48px.png)
+![96 px](face-bench/2026-10-29-v5-96px.png)
+
+- Hair improves: the ponytails get volume and locks over the hairline, the
+  anime hair falls past the shell; no more swim caps.
+- The captain is still the weak cell. His head comes out a narrow egg
+  (width/height 0.62 on a front realistic head) where the brief asks for a
+  square jaw; the beard follows that narrow jaw.
+
+Next: a wider cranium and face (front realistic head ≈ 0.7 wide for 1 tall,
+eyes one eye-width apart), then run the bench again.
