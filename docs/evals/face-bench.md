@@ -222,3 +222,24 @@ after the form, thin mid-value brows below 64 px, `pixel-critic` 9f).
 Next: the `upper-left`/`upper-right` presets become a portrait key light,
 `(∓0.4, -0.45, 0.85)` — about 60–80 % of the face on the light step, the
 half-tone a curved band on the far side and under the jaw.
+
+### 2026-10-29, tenth pass — portrait key light
+
+Rows: npm 0.8.2 · v10 · v12 (`upper-left`/`upper-right` presets become a
+portrait key light, `(∓0.4, -0.45, 0.85)`; v11 is skipped as a regression).
+
+![48 px](face-bench/2026-10-29-v12-48px.png)
+![96 px](face-bench/2026-10-29-v12-96px.png)
+
+- Faces are lit again; the split front face of v11 is gone.
+- Still losing on finish: the front adventurer keeps a hard dark polygon on the
+  far cheek, and the captain's short hair is back to a grey cap.
+- Diagnosis by layer (`lcount.lua`): the agent never repaints the head layer —
+  it keeps the armature's three colours and paints features on a layer above.
+  The cheek polygon is the armature's own shadow step (22 % of the lower front
+  face), traced over by the agent.
+
+Next: the shadow step shrinks to a core shadow at the far contour and under
+the jaw (`v < 0.32`, 15 % → under 14 % of the lower face incl. sockets);
+`rules/38` and `draw` say the masses are the only skin shading (no second set
+of shadow polygons) and that short hair rises 1–3 px above the shell.
