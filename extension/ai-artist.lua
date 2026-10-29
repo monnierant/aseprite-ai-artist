@@ -20,7 +20,7 @@ local EXTENSION_VERSION = "0.8.2"
 -- Optional capabilities. The wire version stays 1 across builds; new command
 -- families are gated on these flags plus the loud unsupported_command reply,
 -- so an older extension degrades visibly rather than mysteriously.
-local FEATURES = { "draw_batch", "recolor", "validate", "tileset", "reference", "filmstrip" }
+local FEATURES = { "draw_batch", "draw_passes", "recolor", "validate", "tileset", "reference", "filmstrip" }
 
 -- The truthy set src/cli.ts accepts, so a value that enables the tool on the
 -- server cannot fail to enable the capability here.
@@ -1639,6 +1639,53 @@ local function layer_name_taken(sprite, name)
     if l.name == name then return true end
   end
   return false
+end
+
+-- draw.passes — several draw.batch passes, each on its own layer, as ONE undo
+-- step. Used by ops the server expands across layers (headArmature: guide
+-- strokes on one layer, plane block-in on another). Aseprite folds a
+-- transaction opened inside another into the outer one, so each inner
+-- draw.batch keeps its own checks and the user still undoes everything with a
+-- single Ctrl+Z. A pass with `create = true` makes its layer when missing.
+H["draw.passes"] = function(args)
+  local s = find_sprite(args.sprite)
+  local passes = need(args.passes, "passes")
+  local results = {}
+  local ok, err = pcall(transact, args.label and ("AI: " .. args.label) or "AI: draw", function()
+    for _, pass in ipairs(passes) do
+      local name = need(pass.layer, "passes[].layer")
+      if pass.create and not layer_name_taken(s, name) then
+        preserving_site(function()
+          local l = s:newLayer()
+          l.name = name
+        end)
+      end
+      local r = H["draw.batch"]({
+        sprite = args.sprite, layer = name, frame = args.frame, ops = need(pass.ops, "passes[].ops"),
+        paletteLock = args.paletteLock, createCel = true, label = args.label,
+      })
+      results[#results + 1] = r
+    end
+  end)
+  if not ok then error(err, 0) end
+
+  local snapped, seen, changed, layers = {}, {}, 0, {}
+  for _, r in ipairs(results) do
+    changed = changed + (r.pixelsChanged or 0)
+    layers[#layers + 1] = { layer = r.layer, pixelsChanged = r.pixelsChanged }
+    for _, sn in ipairs(r.colorsSnapped or {}) do
+      if not seen[sn.from] then seen[sn.from] = true; snapped[#snapped + 1] = sn end
+    end
+  end
+  return {
+    sprite = sprite_display_name(s),
+    layer = results[#results] and results[#results].layer or nil,
+    frame = results[1] and results[1].frame or nil,
+    opsApplied = #passes,
+    pixelsChanged = changed,
+    colorsSnapped = snapped,
+    passes = layers,
+  }
 end
 
 local function apply_layer_op(s, op, cross_sprite)

@@ -121,6 +121,32 @@ check("draw.batch writes pixels and reports the count", function()
   assertEq(result.opsApplied, 1, "opsApplied")
 end)
 
+check("draw.passes paints several layers, creates missing ones, and undoes as one step", function()
+  withMockSprite(8, 8, ColorMode.RGB, function(s)
+    local before = #s.layers
+    local result = call("draw.passes", {
+      label = "passes probe",
+      paletteLock = false,
+      passes = {
+        { layer = "head-planes", create = true, ops = { { kind = "pixels", color = "#e0a07a", points = { { x = 1, y = 1 } } } } },
+        { layer = "guide", create = true, ops = { { kind = "pixels", color = "#2a6fdb", points = { { x = 2, y = 2 } } } } },
+      },
+    })
+    assertEq(#s.layers, before + 2, "two layers created")
+    assertEq(result.pixelsChanged, 2, "pixels across passes")
+    assertEq(#result.passes, 2, "one report per pass")
+    assertEq(result.passes[2].layer, "guide", "second pass layer")
+    -- Re-running reuses the layers instead of stacking duplicates.
+    call("draw.passes", { paletteLock = false, passes = {
+      { layer = "guide", create = true, ops = { { kind = "pixels", color = "#2a6fdb", points = { { x = 3, y = 3 } } } } },
+    } })
+    assertEq(#s.layers, before + 2, "no duplicate layer")
+    app.command.Undo()
+    app.command.Undo()
+    assertEq(#s.layers, before, "one undo per draw.passes call removes its layers and pixels")
+  end)
+end)
+
 check("drawn pixels read back at the right coordinates", function()
   local region = call("pixels.read", { region = { x = 0, y = 0, width = 16, height = 16 } })
   assertEq(region.width, 16, "region width")
