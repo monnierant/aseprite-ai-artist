@@ -55,7 +55,9 @@ recipes: `rules://33-eyes-and-expressions`.
    Short and cropped hair too: 1–3 px of volume above the shell, a jagged top and sideburn
    edge, a lighter clump on the lit side; a smooth grey band hugging the skull is a cap.
    A beard is a mass on the jaw planes that extends the chin silhouette, with a broken
-   edge on the cheek; never a band along the jaw line. Flat mass first, then flow lines from the part or cowlick, 3–4 tones with the
+   edge on the cheek; never a band along the jaw line. From 28 px, start both from the
+   armature's `hairBlock` (`beard: true` for the beard) rather than painting the mass by
+   hand, then add the part, strands, fringe and style silhouette on top. Flat mass first, then flow lines from the part or cowlick, 3–4 tones with the
    highlight band following the skull curve and the lightest tone on top; strands ≥2 px wide;
    the hairline is a colour edge, not an outline (`rules://35-hair-and-clothing`).
 8. **Eyes.** 7×5 at 48 px, 11×6 at 64 — the armature's `footprint` already has this size,

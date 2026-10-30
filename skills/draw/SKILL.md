@@ -41,7 +41,8 @@ sends it back.
 ```
 draw ops=[{ kind:"headArmature", rect:{x:16,y:6,width:48,height:48},
             archetype:"adventure", yaw:-25, pitch:0,
-            sliders:{ jawWidth:0.2 }, planes:{ ramp:["#3b2027","#7a4040","#b8705a","#e0a07a","#f6d2b0"] } }]
+            sliders:{ jawWidth:0.2 }, planes:{ ramp:["#3b2027","#7a4040","#b8705a","#e0a07a","#f6d2b0"] },
+            hairBlock:{ ramp:["#2a1712","#5a3220","#8a5432","#b67d4f","#dcae7c"], beard:false } }]
 ```
 
 `rect` is the head box (hair included, neck excluded); `yaw` −20…−25 is a portrait 3/4 (−35 and more a strong turn)
@@ -61,8 +62,13 @@ jaw: keep the face flat, add only cast shadows (under the fringe, the chin on
 the neck) — no shadow block across the cheek. Below 64 px, no dark band on the
 upper lid: one skin row under the brow, white on both sides of the iris. The
 masses are the skin shading: paint features, highlights and cast shadows over
-them, never a second set of shadow polygons. Hair, even short, rises 1–3 px
-above the shell with a broken edge — never a band hugging the skull. Then draw
+them, never a second set of shadow polygons. Unless the head is bald or
+covered (hood, helmet), pass `hairBlock` with the hair ramp (`beard:true` for a
+beard): it blocks in a hair mass rising above the shell in clumps, locks across
+the hairline, a lit crown and an outline on a `hair-block` layer — the same
+role the masses play for the skin. Keep it, then paint the parting, strands
+and the hairstyle's own silhouette (fringe, bun, long locks) over and beyond
+it; a moustache is painted by hand. Then draw
 the rest of the figure (step 2) and paint the head on its own layer over the
 masses, features into the returned footprints (`rules://32-heads-and-faces`,
 `rules://33-eyes-and-expressions`).

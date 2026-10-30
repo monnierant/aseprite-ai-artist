@@ -26,6 +26,13 @@ ramp: [couleurs du sombre au clair], layer: "head-planes", values: "masses" | "p
 `outline` (vrai par défaut avec `masses`) ferme la peau d'un contour sélectif : le cran
 le plus sombre du côté opposé à la lumière, le cran suivant côté éclairé ; le bas du cou
 reste ouvert (le col le couvre).
+`hairBlock: { ramp, layer: "hair-block", beard }` pose sur son propre calque le bloc-in
+des cheveux : la coquille visible (arrêtée à la ligne d'implantation devant), relevée de
+1–3 px en mèches au sommet, des mèches qui débordent sur le front, trois valeurs sur un
+ellipsoïde ajusté, un arc de brillance cassé sur le sommet éclairé et un contour sélectif
+contre le fond (jamais contre la peau). `beard` ajoute une barbe sur les plans de mâchoire
+et de menton sous la bouche (lèvres et pommettes libres, moustache laissée au peintre),
+qui prolonge la silhouette du menton et a un bord supérieur cassé.
 `values: "masses"` (défaut) donne trois masses — lumière, demi-teinte, ombre
 — sur les crans intérieurs de la rampe, les extrêmes restant libres pour les
 accents. Pour `realistic` et `adventure`, la lumière est enveloppée puis lissée
