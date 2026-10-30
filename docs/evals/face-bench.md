@@ -286,3 +286,24 @@ agent is asked to carry the line around hair, beard and shoulders).
 Verdict: **not passed**. Construction (turn, jaw, from-below views) is ahead;
 the finish gap is now hair and beard rendering and the amount of detail the
 agent paints, not the armature's skin masses.
+
+### 2026-10-30, thirteenth pass — hair and beard block
+
+Rows: npm 0.8.2 · v14 · v15 (`hairBlock`: hair mass rising above the shell in
+clumps, locks over the hairline, lit crown; `beard` on the jaw and chin).
+
+![48 px](face-bench/2026-10-30-v15-48px.png)
+![96 px](face-bench/2026-10-30-v15-96px.png)
+
+- Captain, both angles and sizes: the cap and the jaw strap are gone — hair
+  has volume, the beard is a textured mass that extends the chin. Closest to
+  the before row so far; the before row still wins on warmth and on the
+  painted features (smile, wrinkles, defined eyes).
+- Adventurer 3/4 and front: still behind — pale low-contrast skin, the far
+  half-tone a band, flat light hair.
+- Anime 3/4: worse — the agent passed `hairBlock` and the clumped top reads as
+  spikes on anime hair. Anime front: level.
+
+Verdict: **not passed**. Next: no `hairBlock` for `anime`/`chibi` (rules/38,
+draw); the remaining gap is skin value and warmth on the adventurer and the
+detail the agent paints over the masses.
