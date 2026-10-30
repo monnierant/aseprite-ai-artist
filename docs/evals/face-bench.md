@@ -1,0 +1,309 @@
+# Face bench
+
+Six fixed heads that judge whether the agent builds a face from volumes
+([ADR-0013](../adr/0013-volumetric-head-construction.md)). Each brief is drawn
+twice — 48 px and 96 px head height — before and after a change to the head
+rules or to `draw` op `headArmature`, and the results are laid side by side.
+The verdict is a person looking at the sheet, not the `validate` score.
+
+| # | Archetype | View | `headArmature` | Brief |
+|---|---|---|---|---|
+| 1 | `realistic` | 3/4 | `yaw: -25` | A grey-haired ship captain, square jaw, heavy brow, short beard line, lit from the upper left. |
+| 2 | `realistic` | 3/4, seen from below | `yaw: -25, pitch: 20` | The same captain looking up at a mast: the jaw underside shows, the feature lines bow upward. |
+| 3 | `adventure` | 3/4 | `yaw: -25` | Remake of MON-574: a young adventurer with a ponytail and a scar over the left brow, bust portrait. |
+| 4 | `adventure` | front | `yaw: 0` | The same adventurer, front, neutral expression, for a dialogue box. |
+| 5 | `anime` | 3/4 | `yaw: -25` | A cheerful mage girl with long bangs and large decal eyes, slight smile. |
+| 6 | `anime` | front | `yaw: 0` | The same mage, front, surprised (brows up, eyes wide, O mouth). |
+
+`chibi` is out of the bench: its construction is a decal on a ball, not a
+planar head.
+
+## Running it
+
+1. Canvas: 64×64 for the 48 px head, 128×128 for the 96 px head, RGB, a skin
+   ramp of 5, hair ramp of 4, cloth ramp of 3, transparent backdrop.
+2. Give the brief as written, plus "bust portrait, head N px tall", to a fresh
+   session with no other instruction (`docs/evals/benchmarks.md`, procedure
+   1–3). Do not mention the armature: whether the agent reaches for it is part
+   of what is measured.
+3. Capture `look op="preview"` of the result and the guide layer, if any.
+4. Lay the twelve heads out in brief order, before above after, at 4×.
+
+## What passes
+
+Per head, all of:
+
+- The block-in alone (planes or the first flat pass) reads as a head turned
+  the way the brief says, at 1×.
+- The cranium is one ovoid: in 3/4 the back of the skull shows behind the ear.
+- A visible front/side break; the eyes sit in sockets under the brow; in 3/4
+  the far eye is narrower.
+- Brief 2: the underside of the jaw is its own plane and the eye line bows up.
+- Hair sits on the cranium, stops at the ears; the neck goes under the skull.
+- The same character reads across its two briefs (1–2, 3–4, 5–6).
+
+## Results
+
+### 2026-10-29 — `gpt-6.1-terra`, Hermes, headless Aseprite
+
+Rows: npm 0.8.2 (before) · the branch with faceted planes (after v1) · the
+branch with `values: "masses"` (after v2). One run per cell, no retries.
+
+![48 px](face-bench/2026-10-29-48px.png)
+![96 px](face-bench/2026-10-29-96px.png)
+
+- The armature was used in all 24 branch runs, with no mention of it in the
+  brief. Before the rule became a gate in `draw` step 1b, the agent read the
+  rules and still blocked the head in by hand.
+- Construction improves. The 3/4 heads turn instead of sliding, the cranium
+  shows behind the ear, and the underside of the jaw shows from below (brief
+  2). The far eye is narrower.
+- Finish regresses. v1 left the plane facets in the skin, and the result
+  reads as a mask. v2 removes most of them but keeps a hard half-tone seam
+  down the face. The before row is still the more appealing set.
+- `anime` should not carry modelled planes: brief 5 v2 has a block of shadow
+  on the lower face where cel shading wants one flat value.
+
+Verdict: **not passed**. ADR-0013 stays *proposed*. Next steps: two values
+for `anime`/`chibi`, a softer half-tone edge for `realistic`/`adventure`,
+then run the bench again.
+
+### 2026-10-29, second pass — wrapped light, cel masses, smoothed terminator
+
+Rows: npm 0.8.2 · v3 (wrapped light, two cel values for `anime`/`chibi`) ·
+v4 (per-pixel smoothed masses for `realistic`/`adventure`). Brief 4 at 48 px
+timed out once (agent stalled, 30 min) and was run again.
+
+![48 px](face-bench/2026-10-29-v4-48px.png)
+![96 px](face-bench/2026-10-29-v4-96px.png)
+
+- The facets and the seam down the face are gone; the anime faces are flat
+  again, and the front views (briefs 4 and 6) now hold up against the before row.
+- 3/4 and low angles keep the gain in construction, at both sizes.
+- The remaining gap is character, not volume: the hair fills the armature's
+  hair shell exactly and reads as a swim cap, and the captain's beard became
+  a thin band along the jaw. The before row wins on hair and beard.
+
+Verdict: **not passed yet**, closer. Next: the hair shell becomes the inner
+limit of the hair, never its outline (rules 32/38, `pixel-critic` 9d).
+
+### 2026-10-29, third pass — hair breaks the shell
+
+Rows: npm 0.8.2 · v4 · v5 (hair shell as inner limit, beard on the jaw planes,
+`pixel-critic` 9d).
+
+![48 px](face-bench/2026-10-29-v5-48px.png)
+![96 px](face-bench/2026-10-29-v5-96px.png)
+
+- Hair improves: the ponytails get volume and locks over the hairline, the
+  anime hair falls past the shell; no more swim caps.
+- The captain is still the weak cell. His head comes out a narrow egg
+  (width/height 0.62 on a front realistic head) where the brief asks for a
+  square jaw; the beard follows that narrow jaw.
+
+Next: a wider cranium and face (front realistic head ≈ 0.7 wide for 1 tall,
+eyes one eye-width apart), then run the bench again.
+
+### 2026-10-29, fourth pass — wider heads
+
+Rows: npm 0.8.2 · v5 · v6 (wider cranium and face, eyes further apart).
+
+![48 px](face-bench/2026-10-29-v6-48px.png)
+![96 px](face-bench/2026-10-29-v6-96px.png)
+
+- The captain gets his width back: square jaw, the beard is a mass on the jaw
+  and chin, the heavy brow reads. The front views hold against the before row.
+- The 3/4 heads look over-turned. Measured on the armature: at yaw −35 the
+  nose sits 0.17 of the head width from the far contour, a strong turn, not a
+  portrait 3/4 (about 0.25, reached at yaw −25). The rules said ±30–40°, so the
+  agent always picked −35.
+- The heavy shadow on the anime 3/4 at 48 px is the agent's paint, not the
+  armature: every anime plane except the neck is on the light step.
+
+Next: a portrait 3/4 is yaw ±20–25° (rules 32/38, `draw`, `concept`,
+templates, bench table), then run the bench again.
+
+### 2026-10-29, fifth pass — portrait three-quarter at yaw −25
+
+Rows: npm 0.8.2 · v6 · v7 (3/4 = yaw ±20–25°).
+
+![48 px](face-bench/2026-10-29-v7-48px.png)
+![96 px](face-bench/2026-10-29-v7-96px.png)
+
+- The 3/4 heads read as portrait three-quarters: a sliver of far cheek beyond
+  the nose, the far eye narrower but whole. The captain in 3/4 now beats the
+  before row (square jaw, heavy brow, beard on the jaw).
+- The anime pair holds level with the before row.
+- What still loses at 48 px: the adventurer's eyes. The armature opened the
+  lid to 5×4 px with the brow on the row right above, and the agent painted a
+  heavy, half-closed eye on both briefs 3 and 4.
+
+Next: below 72 px the lid opens up to 1.4× (48 px → about 7×5) and the brow
+keeps one skin row above the lid, then run the bench again.
+
+### 2026-10-29, sixth pass — readable small eyes
+
+Rows: npm 0.8.2 · v7 · v8 (48 px lid opening up to 1.4×, brow one row higher).
+
+![48 px](face-bench/2026-10-29-v8-48px.png)
+![96 px](face-bench/2026-10-29-v8-96px.png)
+
+- At 96 px the branch now holds or beats the before row on the captain (both
+  angles) and the adventurer (both angles): turned heads, square jaw, jaw
+  underside from below, open eyes.
+- At 48 px the eyes are bigger but the agent still paints the upper lid as a
+  dark band: the rules told it the orbit is the darkest skin value, which at
+  48 px fills the whole space between brow and lid. The before row keeps the
+  more open, appealing eyes.
+- Anime 3/4 (both sizes): the agent paints a hard shadow wedge across the
+  cheek, although the armature hands it a flat face.
+
+Verdict: **not passed yet** — 96 px is there, 48 px and anime finish are not.
+Next: below 64 px the orbit is one mid-shadow row and the darkest dark goes to
+the lid line and pupil only; anime faces stay cel-flat with cast shadows only
+(rules 32/33/38, `pixel-critic` 9e).
+
+### 2026-10-29, seventh pass — mid-value orbits, cel-flat anime
+
+Rows: npm 0.8.2 · v8 · v9 (orbit one mid-shadow row below 64 px, anime faces
+cel-flat in the rules, `pixel-critic` 9e).
+
+![48 px](face-bench/2026-10-29-v9-48px.png)
+![96 px](face-bench/2026-10-29-v9-96px.png)
+
+- 48 px eyes open up: the adventurer 3/4 now shows whites and a teal iris
+  instead of a slit. The brows are still heavy on the front view.
+- The anime 3/4 at 48 px loses most of the cheek wedge; at 96 px the agent
+  still paints one across the cheek. The armature itself put the turned side
+  of an anime head (temple, cheek side) on the shadow step at yaw −25, which
+  legitimised it.
+- The agent picks `adventure` for the captain in some runs and mirrors the
+  yaw (+25): the brief leaves both open, so these are choices, not bugs.
+
+Verdict: **not passed yet**. Next: cel-shaded heads keep the sides in the
+light (shadow only under the jaw and on the neck), and `draw` repeats the
+flat-face and open-eye rules where the agent reads them first.
+
+### 2026-10-29, eighth pass — cel sides in the light
+
+Rows: npm 0.8.2 · v9 · v10 (anime/chibi sides stay lit, `draw` repeats the
+flat-face and open-eye rules).
+
+![48 px](face-bench/2026-10-29-v10-48px.png)
+![96 px](face-bench/2026-10-29-v10-96px.png)
+
+- The anime cheek wedge is gone at both sizes; the anime pair is level with
+  the before row.
+- 48 px: eyes open on every realistic/adventure cell; the six cells are level
+  with the before row, with the gain in construction on the 3/4 and low views.
+- 96 px: the captain from below and the adventurer front hold or beat the
+  before row. Two cells still lose on finish: the captain 3/4 (hard dark
+  patches on the cheek) and the adventurer 3/4 (a hard-edged half-tone wedge
+  on the near cheek).
+
+Verdict: **near parity on finish, ahead on construction** — awaiting the human
+verdict before ADR-0013 moves to *accepted*.
+
+### 2026-10-29, ninth pass — ellipsoid-blended masses
+
+Rows: npm 0.8.2 · v10 · v11 (masses blend a fitted ellipsoid, highlights shaped
+after the form, thin mid-value brows below 64 px, `pixel-critic` 9f).
+
+![48 px](face-bench/2026-10-29-v11-48px.png)
+![96 px](face-bench/2026-10-29-v11-96px.png)
+
+- Regression. The terminator curves now, but the half-tone grew: the front
+  adventurer is split down the middle and the 3/4 heads keep a large hard
+  half-tone on the cheek. The captain lost its rectangles, not its flatness.
+- Root cause: the `upper-left` preset, `(-0.75, -0.6, 0.6)`, is a raking side
+  light that leaves about half of a front face (0.48) off the light step. The
+  before-row portraits are lit by a key light much closer to the view axis.
+
+Next: the `upper-left`/`upper-right` presets become a portrait key light,
+`(∓0.4, -0.45, 0.85)` — about 60–80 % of the face on the light step, the
+half-tone a curved band on the far side and under the jaw.
+
+### 2026-10-29, tenth pass — portrait key light
+
+Rows: npm 0.8.2 · v10 · v12 (`upper-left`/`upper-right` presets become a
+portrait key light, `(∓0.4, -0.45, 0.85)`; v11 is skipped as a regression).
+
+![48 px](face-bench/2026-10-29-v12-48px.png)
+![96 px](face-bench/2026-10-29-v12-96px.png)
+
+- Faces are lit again; the split front face of v11 is gone.
+- Still losing on finish: the front adventurer keeps a hard dark polygon on the
+  far cheek, and the captain's short hair is back to a grey cap.
+- Diagnosis by layer (`lcount.lua`): the agent never repaints the head layer —
+  it keeps the armature's three colours and paints features on a layer above.
+  The cheek polygon is the armature's own shadow step (22 % of the lower front
+  face), traced over by the agent.
+
+Next: the shadow step shrinks to a core shadow at the far contour and under
+the jaw (`v < 0.32`, 15 % → under 14 % of the lower face incl. sockets);
+`rules/38` and `draw` say the masses are the only skin shading (no second set
+of shadow polygons) and that short hair rises 1–3 px above the shell.
+
+### 2026-10-29, eleventh pass — core shadow only
+
+Rows: npm 0.8.2 · v12 · v13 (shadow step narrowed to a core shadow; masses are
+the only skin shading; short hair rises above the shell).
+
+![48 px](face-bench/2026-10-29-v13-48px.png)
+![96 px](face-bench/2026-10-29-v13-96px.png)
+
+- Adventurer front and the anime pair: level with the before row.
+- Still losing: the captain (grey hair and beard still bands hugging the
+  skull and jaw) and the adventurer 3/4 (a hard-edged block on the far cheek).
+- The one difference common to every column: every before-row head is closed
+  by a dark outline around skin, hair and shoulders; the branch heads have
+  none, so skin melts into hair and backdrop and the faces read pale and soft.
+  `rules/38` step 9 asked for it, the agent never drew it.
+
+Next: the armature closes the skin with a selective outline by default with
+`masses` (darkest step away from the light, next step on the lit side, neck
+bottom open); `rules/38` and `draw` ask the agent to carry the line around the
+hair, beard and shoulders.
+
+### 2026-10-30, twelfth pass — selective skin outline
+
+Rows: npm 0.8.2 · v13 · v14 (`planes.outline` on by default with masses; the
+agent is asked to carry the line around hair, beard and shoulders).
+
+![48 px](face-bench/2026-10-29-v14-48px.png)
+![96 px](face-bench/2026-10-29-v14-96px.png)
+
+- The skin is now closed by an outline in every cell; the agent carries it
+  around the hair on some cells only.
+- No column moves past the before row. Captain (both angles): hair still a
+  smooth grey cap, beard a band along the jaw — the before row has strands,
+  highlights, a textured beard and wrinkles. Adventurer 3/4 and front: the
+  far-side half-tone reads as a diagonal band, where the before row keeps a
+  flat face with edge shading. Anime: level, slightly blotchy skin.
+- Shading probes (light threshold 0.48, ellipsoid weight 0.3) trade the band
+  for a straight strip on the front view and a flat 3/4; not adopted.
+
+Verdict: **not passed**. Construction (turn, jaw, from-below views) is ahead;
+the finish gap is now hair and beard rendering and the amount of detail the
+agent paints, not the armature's skin masses.
+
+### 2026-10-30, thirteenth pass — hair and beard block
+
+Rows: npm 0.8.2 · v14 · v15 (`hairBlock`: hair mass rising above the shell in
+clumps, locks over the hairline, lit crown; `beard` on the jaw and chin).
+
+![48 px](face-bench/2026-10-30-v15-48px.png)
+![96 px](face-bench/2026-10-30-v15-96px.png)
+
+- Captain, both angles and sizes: the cap and the jaw strap are gone — hair
+  has volume, the beard is a textured mass that extends the chin. Closest to
+  the before row so far; the before row still wins on warmth and on the
+  painted features (smile, wrinkles, defined eyes).
+- Adventurer 3/4 and front: still behind — pale low-contrast skin, the far
+  half-tone a band, flat light hair.
+- Anime 3/4: worse — the agent passed `hairBlock` and the clumped top reads as
+  spikes on anime hair. Anime front: level.
+
+Verdict: **not passed**. Next: no `hairBlock` for `anime`/`chibi` (rules/38,
+draw); the remaining gap is skin value and warmth on the adventurer and the
+detail the agent paints over the masses.

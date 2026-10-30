@@ -71,6 +71,30 @@ In descending order of how much it costs the user:
 7. **Strays and noise.** Isolated pixels, detail that is just dirt.
 8. **Inconsistent lines.** Uneven runs, doubled pixels, jaggies.
 9. **Inconsistent light.** Direction that moves across the sprite or frames.
+9b. **A head built flat** (28 px and up): an egg outline with features printed
+    on it, no front/side break, eyes without a socket under the brow, a 3/4
+    head that is a front head slid sideways, a cranium cut off behind the ear,
+    hair as a helmet or a neck hung from the chin. Name the parameters for
+    `draw` op `headArmature` that would rebuild it (archetype, yaw, pitch,
+    sliders) and cite `rules://32-heads-and-faces`.
+9c. **A faceted face** (28 px and up): the construction planes left in the
+    finished skin — hard-edged patches of four or more skin values, a
+    rectangle for a nose, a seam down the cheek. The skin holds light,
+    half-tone and shadow masses; name `planes.values:"masses"` as the fix.
+9d. **Swim-cap hair** (28 px and up): the hair mass follows the armature's
+    hair shell exactly — smooth even edge, no part, no lock crossing the
+    hairline, no volume above the skull. Same for a beard drawn as a band
+    along the jaw. Ask for a broken, asymmetric silhouette (`rules://38-portraits` step 7).
+9e. **Sleepy eyes and bruised anime cheeks** (28 px and up): an upper lid
+    painted as a dark band with the brow on the row right above, so a wide-open
+    eye reads half-closed — ask for one skin row under the brow and white on
+    both sides of the iris. On `anime`/`chibi`, a shadow wedge or diagonal block
+    across the cheek — cel faces keep one flat value (`rules://38-portraits` step 6).
+9f. **Sticker highlights** (28 px and up): a light or shadow patch on the
+    face with straight edges and right-angle corners (a rectangle on the cheek
+    or chin, a diagonal block down the cheek). Ask for shapes that follow the
+    form and for the armature's masses to stay as the base
+    (`rules://38-portraits` step 6).
 10. **Animation: volume drift, height drift, uniform timing, no anticipation.**
 
 ## Output

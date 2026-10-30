@@ -3,9 +3,12 @@
 A portrait is a face at 32–64+ px shown in a dialogue box, a select screen or a status panel,
 usually held for seconds. It must carry identity (face shape, hair, one defining feature) and
 emotion (a swappable brow/eye/mouth set) and still read at 1×. Without rules agents draw a
-sprite head made big: 2×2 eyes, no planes, hair as a helmet. Head geometry:
-`rules://32-heads-and-faces`; eyes, mouths and expression recipes:
-`rules://33-eyes-and-expressions`.
+sprite head made big: 2×2 eyes, no planes, hair as a helmet. **The first `draw` call on a
+portrait head of 28 px or more is `headArmature`; never block it with grid, polyline or
+ellipse.** A portrait head is built, not
+outlined: `draw` op `headArmature` gives the cranium, facial block, planes, eye sockets, hair
+shell and neck at any turn (`rules://32-heads-and-faces`); eyes, mouths and expression
+recipes: `rules://33-eyes-and-expressions`.
 
 ## Rules
 
@@ -15,36 +18,64 @@ sprite head made big: 2×2 eyes, no planes, hair as a helmet. Head geometry:
    64×80 (OHRRPGCE).
 2. **Frame first.** Face-only or bust (head, neck, shoulders cut by the canvas edge); front or
    slightly turned. Head (hair top to chin) 60–75% of the canvas height, 1–2 px of air above
-   the hair, shoulders below. Turned heads: build from `heads-tq-32` in rules 32 and keep these
-   landmark rows. Conflict: one guide gives 60–70% for a 32 px bust, the 48 px template is
-   75% because bob hair adds height; both sit in the range.
+   the hair, shoulders below. Turn the head with the armature's `yaw` (3/4 = ±20–25°; ±35° is a strong turn) and
+   `pitch` rather than sliding front features. Conflict: one guide gives 60–70% for a 32 px
+   bust, the 48 px template is 75% because bob hair adds height; both sit in the range.
 3. **Three decisions before any shading:** face shape, brow shape, eye shape. Then exaggerate
    one defining feature (big nose, heavy lids, strong brow) and push the face off symmetry
    (parting, one brow a row higher, unequal highlights).
-4. **Build order:** rough sketch (coloured lines at small sizes) → one flat shape for face,
-   neck and shoulders → hair as flat masses → big base colours only → 2–3 skin planes → eyes
-   last → highlights, anti-aliasing, selective outline. If the head shape is off at step one,
-   the final is off; fix it there.
-5. **Landmarks (H = hair top to chin, 36 rows at 48 px):** hairline 22–28%; brow 40–42%; eye
-   line 52–56%; nose base halfway between brow and chin (≈72%); mouth seam 80–83%; chin 100%.
-   Eye width = face width ÷ 5 (realistic) to ÷ 4 (stylised, the template); eye gap 1–1.5 eye
-   widths; mouth width = face width ÷ 3 to ÷ 2.5; ear ≈ nose size, hidden by hair in the
-   template.
-6. **Light and skin.** One source, upper left. Three skin tones plus one dark accent (nostril,
-   lip seam, eye crease). Shadow turned 10–22° toward red, saturation +19–26, brightness equal
+4. **Build order:** armature (`headArmature` with `planes`) → merge noisy planes on a head
+   layer, keep the front/side break → hair masses that use the shell as their inner limit and break its silhouette → neck and
+   shoulders → eyes in their sockets last → highlights, anti-aliasing, selective outline. If
+   the block-in does not read as a turned head at 1×, change the armature parameters; the
+   final cannot fix it.
+5. **Landmarks come from the armature.** Use the returned `landmarks` and `eyes`; on a front
+   adventure head they land near hairline 22–28%, brow 40–42%, eye line 52–56%, nose base
+   ≈72%, mouth seam 80–83% of hair top to chin — use these rows to check a front view, not to
+   build a turned one. Eye width = face width ÷ 5 (realistic) to ÷ 4 (stylised); mouth width =
+   face width ÷ 3 to ÷ 2.5; ears from the armature's `ears`.
+6. **Light and skin.** One source, upper left — the same `light` given to the armature, so the
+   plane values match. Three skin tones plus one dark accent (nostril, lip seam, eye crease). Shadow turned 10–22° toward red, saturation +19–26, brightness equal
    or lower (measured on a published sprite palette). Light patches: forehead, cheek apple, nose
-   bridge, chin. Shadow: the far cheek 1–2 px, under the hair edge 1 px, under the chin. From
+   bridge, chin — each shaped like the form it sits on (cheek apple = a rounded triangle under
+   the eye, nose bridge = a 1-px line, chin = a small arc), never a rectangle: a straight-edged
+   block of light reads as a sticker on the face. The armature's masses ARE the skin shading:
+   paint features and cast shadows on top (under the nose, under the lower lip, under the hair
+   edge 1 px, under the chin onto the neck), never a second set of shadow polygons over the
+   cheek or jaw — two terminators read as a bruise. To change a mass, edit it on the head layer
+   and keep its curve. From
    32 px, forehead warmer, mid-face rosier, lower face cooler (`rules://20-color-for-pixel-art`).
-7. **Hair.** Flat mass first, then flow lines from the part or cowlick, 3–4 tones with the
+   `anime` and `chibi` are cel-shaded: the armature gives one flat face value, keep it. The
+   only shadows are cast shapes — under the fringe, under the chin onto the neck, the far
+   cheek 1 px at most. Never a wedge or a diagonal block across the cheek: it reads as a bruise.
+7. **Hair.** The shell is the skull the hair sits on, not the hair's outline: a hair mass
+   that fills the shell exactly reads as a swim cap. Give it an asymmetric silhouette —
+   locks crossing the hairline, a notch at the part, volume above the shell on top, tufts
+   breaking the outline over the ears — and keep 1–2 px of skin visible at the temple.
+   Short and cropped hair too: 1–3 px of volume above the shell, a jagged top and sideburn
+   edge, a lighter clump on the lit side; a smooth grey band hugging the skull is a cap.
+   A beard is a mass on the jaw planes that extends the chin silhouette, with a broken
+   edge on the cheek; never a band along the jaw line. From 28 px, start both from the
+   armature's `hairBlock` (`beard: true` for the beard) rather than painting the mass by
+   hand, then add the part, strands, fringe and style silhouette on top. Not for
+   `anime`/`chibi`: their hair is a few large flat locks with pointed tips, its clumped
+   top reads as spikes. Flat mass first, then flow lines from the part or cowlick, 3–4 tones with the
    highlight band following the skull curve and the lightest tone on top; strands ≥2 px wide;
    the hairline is a colour edge, not an outline (`rules://35-hair-and-clothing`).
-8. **Eyes.** 7×5 at 48 px, 11×6 at 64: dark lid line, darker upper iris, pupil, catch-light,
+8. **Eyes.** 7×5 at 48 px, 11×6 at 64 — the armature's `footprint` already has this size,
+   fill it: open eyes show white on both sides of the iris. Below 64 px a brow is 1 px thick
+   (2 px only at its inner head), in the hair's mid value, never the outline colour: a dark
+   2-px brow over a 5-px eye reads as a scowl. Dark lid line, darker upper iris, pupil, catch-light,
    pale grey-blue whites. From 48 px make one eye dominant — brighter highlight or darker lid —
    and keep the other softer. Draw at final size; when reducing a bigger paint, enlarge the eyes
    by 2–3 px first or they vanish.
 9. **Lines.** Outline the outer silhouette only; separate interior shapes by value. A dark
    border around head and shoulders lifts the portrait off its backdrop; on the shadow side a
-   rim sampled from the backdrop beats black (`rules://04-outlines-and-edges`).
+   rim sampled from the backdrop beats black (`rules://04-outlines-and-edges`). With
+   `masses` the armature already closes the skin with a selective outline (darkest skin step
+   away from the light, next step on the lit side); carry the same line around the hair, the
+   beard and the shoulders in each material's darkest value — a head outlined everywhere but
+   the hair reads as a face pasted on a wig. Never paint over the skin outline with fill.
 10. **Emotion = one base face with swappable brows, eyes and mouth** on their own layers;
     every expression must still be recognisably the same person. Idle: blink plus a 1-px jaw
     or hair shift (2 frames); talk: ≤3 mouth shapes; damage portraits may swap expression.
@@ -246,18 +277,22 @@ SSSSSSSSSSSSSSSS.SSSSSSSSSSSSSSSS.SSSSSSSSSSSSSSSS.SSSSSSSSSSSSSSSS.SSSSSSSSSSSS
 
 1. `sprite_info`; choose canvas and head height from the size table. Build palettes first:
    `palette` op `ramp` for skin (5 steps), hair (4), cloth (3) (`rules://01-palette-and-color`).
-2. Layers (`layer` op `create`): backdrop, body, head, hair, face (eyes, brows, mouth), accents
+2. `draw` op `headArmature`: `rect` = head box (hair shell included, neck excluded), the
+   archetype and `sliders` that carry the character, `yaw`/`pitch`, `planes: { ramp, light }`.
+   It creates the `guide` and `head-planes` layers in one undo step. `look` op `preview` at 1×:
+   the block-in alone must read as this person's head at this turn — if not, undo and change
+   the parameters now.
+3. Layers (`layer` op `create`): backdrop, body, head, hair, face (eyes, brows, mouth), accents
    (`rules://06-layers-and-rigging`). Expressions will swap the face layer only.
-3. Block in: `draw` op `grid` or `ellipse` for the face-neck-shoulders shape, then the hair
-   masses, in flat colour (`portrait-48-blockin`). `look` op `preview` at 1×; fix the head shape now.
-4. Guide layer: `draw` op `line` rows for hairline, brow, eye line, nose base, mouth, chin from
-   rule 5; delete it at the end.
-5. Planes: fill the light patches and the far-side shadow with `draw` op `fill`; add the 1-px
-   shadow under the hair edge and the chin. `look` op `preview`.
+4. Head layer: copy the plane block-in, merge planes that read as noise, smooth the outline
+   along the returned `rhythm` curves; hair masses inside `hairShell`, neck on `neck`,
+   shoulders below (`portrait-48-blockin` for the bust framing).
+5. Planes: keep the front/side break, the orbit shadow and the underside of the jaw; add the
+   1-px shadow under the hair edge and the chin. `look` op `preview`.
 6. Hair: flow lines from the part, highlight band, 2-px strands; no outline on the hairline.
 7. Eyes, brows, nose, mouth, in that order; `look` op `ascii` with a `region` to check gaps and
    mirror positions. Catch-light on the same side of both eyes.
-8. Outline the outer silhouette; set the backdrop; `look` op `preview`, flip a copy
+8. Hide or delete the guide. Outline the outer silhouette; set the backdrop; `look` op `preview`, flip a copy
    (`transform` op `flip`) and judge it desaturated.
 9. Expressions: `frame` op `duplicate`, swap the face cel from `rules://33-eyes-and-expressions`,
    `tag` op `create` per expression; blink frames from `portrait-48-eyes`. `look` op `filmstrip`,
@@ -268,6 +303,8 @@ SSSSSSSSSSSSSSSS.SSSSSSSSSSSSSSSS.SSSSSSSSSSSSSSSS.SSSSSSSSSSSSSSSS.SSSSSSSSSSSS
 | Symptom | Cause | Fix |
 |---|---|---|
 | Looks like a sprite head enlarged | 2×2 eyes, no planes | Eyes ≥7×5 at 48 px, three skin tones, planes |
+| Flat egg with a face printed on | Outline filled, features placed by rows | Build with `headArmature`; planes before features |
+| 3/4 portrait = front face slid sideways | No rotation | Armature `yaw`; far eye narrower, nose breaks the contour |
 | Doll face | Perfect symmetry, one flat skin tone | One brow or highlight off, hue-shifted shadow |
 | Eyes tiny after resizing | Painted large then scaled | Draw at final size; enlarge eyes first |
 | Hair is a helmet | One flat mass, no flow | Part, strands ≥2 px, highlight band, 3–4 tones |
@@ -280,6 +317,7 @@ SSSSSSSSSSSSSSSS.SSSSSSSSSSSSSSSS.SSSSSSSSSSSSSSSS.SSSSSSSSSSSSSSSS.SSSSSSSSSSSS
 ## Review
 
 - Head 60–75% of canvas height; hair top 1–2 px from the edge; shoulders cut by the frame.
+- The head was built from `headArmature`; its block-in reads as a turned head at 1×.
 - Landmark rows within the ranges in rule 5; eye width ≥ the size table.
 - Exactly one light direction; three skin tones plus accent; shadow under hair and chin.
 - Hair has flow lines and a highlight band; hairline not outlined.
@@ -292,7 +330,8 @@ SSSSSSSSSSSSSSSS.SSSSSSSSSSSSSSSS.SSSSSSSSSSSSSSSS.SSSSSSSSSSSSSSSS.SSSSSSSSSSSS
 
 - Saint11, "Portraits" (four-step process) and the big portrait measurements; AdamCYounis, dialogue bust and GBA panel video.
 - Slynyrd Pixelblog 29 (Anime Faces and Hair) and 39 (Sci-fi RPG, 42×42 portraits).
-- Loomis, *Figure Drawing for All It's Worth* — portrait and lighting, pp. 171, 181; Solarski, *Drawing Basics and Video Game Art* — Male Head Study, focal eye.
+- Bridgman, *Constructive Anatomy*; Vilppu, *The Vilppu Drawing Manual*; Asaro, "Planes of the Head" — head construction by volumes and planes (ADR-0013).
+- Loomis, *Figure Drawing for All It's Worth* — portrait lighting, pp. 171, 181; Solarski, *Drawing Basics and Video Game Art* — Male Head Study, focal eye.
 - Bancroft, *Creating Characters with Personality* — face-shape and feature decisions, pp. 68–72, 81; Dawe, *Make Your Own Pixel Art* — portraits in games p. 118.
 - BMR portrait method (OHRRPGCE legacy portraits); art-pia small-canvas guide (bust framing); BJG skin-tone palette slide; Gurney, *Color and Light* — face zones p. 156.
 - Derek Yu, *Pixel Art Tutorial* — flip and desaturate check.

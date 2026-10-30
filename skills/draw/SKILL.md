@@ -30,10 +30,55 @@ and ` ```grid ` templates. A template is a starting point you transcribe with
 `draw` op `grid`, mapping each legend role onto the sprite's palette; adapt
 it to the pose rather than inventing the shape from nothing.
 
+### 1b. A head of 28 px or more: build it first
+
+**Gate.** If the sprite has a head 28 px tall or more (portrait, bust, a large
+character), its first pixels come from `draw` op `headArmature`, alone in its
+call — never from `grid`, `polyline`, `ellipse` or `rect`. A hand-drawn head
+at this size comes out as an egg with a face printed on it, and the review
+sends it back.
+
+```
+draw ops=[{ kind:"headArmature", rect:{x:16,y:6,width:48,height:48},
+            archetype:"adventure", yaw:-25, pitch:0,
+            sliders:{ jawWidth:0.2 }, planes:{ ramp:["#3b2027","#7a4040","#b8705a","#e0a07a","#f6d2b0"] },
+            hairBlock:{ ramp:["#2a1712","#5a3220","#8a5432","#b67d4f","#dcae7c"], beard:false } }]
+```
+
+`rect` is the head box (hair included, neck excluded); `yaw` −20…−25 is a portrait 3/4 (−35 and more a strong turn)
+turned toward an upper-left light, 0 is front; `pitch` > 0 is seen from below.
+It writes a `guide` layer and a lit `head-planes` layer in one undo step and
+returns `armature`: eye footprints, brow, nose base, mouth, chin, hairline,
+hair shell, neck. `look op="preview"`: the block-in must read as the right
+head at the right turn — if not, undo and change the parameters, never push
+cranium pixels. The default `planes.values:"masses"` paints light, half-tone
+and shadow masses: that is the start of the finished skin, keep it and refine
+its edges, and closes the skin with a selective outline (`planes.outline`, on by
+default with masses): continue that line around hair, beard and shoulders.
+`values:"planes"` (one step per plane) is a construction study —
+never leave plane facets in a finished face, they read as a mask. For
+`anime`/`chibi` the masses are one flat face value with shadow only under the
+jaw: keep the face flat, add only cast shadows (under the fringe, the chin on
+the neck) — no shadow block across the cheek. Below 64 px, no dark band on the
+upper lid: one skin row under the brow, white on both sides of the iris. The
+masses are the skin shading: paint features, highlights and cast shadows over
+them, never a second set of shadow polygons. Unless the head is bald or
+covered (hood, helmet), pass `hairBlock` with the hair ramp (`beard:true` for a
+beard): it blocks in a hair mass rising above the shell in clumps, locks across
+the hairline, a lit crown and an outline on a `hair-block` layer — the same
+role the masses play for the skin (`realistic`/`adventure` only: for
+`anime`/`chibi` leave it out and paint the hair as a few large flat locks with
+pointed tips). Keep it, then paint the parting, strands
+and the hairstyle's own silhouette (fringe, bun, long locks) over and beyond
+it; a moustache is painted by hand. Then draw
+the rest of the figure (step 2) and paint the head on its own layer over the
+masses, features into the returned footprints (`rules://32-heads-and-faces`,
+`rules://33-eyes-and-expressions`).
+
 ### 2. Block in the silhouette
 
 One flat colour, no detail. Target the `base` layer. Everything in one `draw`
-call.
+call — except a head of 28 px or more, which step 1b already built.
 
 For anything up to about 32×32, write it as a **grid**: one character per
 pixel, so you see the whole silhouette while you write it instead of finding

@@ -140,6 +140,15 @@ placed. This is where the design becomes decisions you can check against:
 }
 ```
 
+A head of 28 px or more also gets a `head` entry — the parameters of `draw`
+op `headArmature`, read from the reference, so the drawing stage builds the
+head instead of guessing it:
+
+```json
+"head": { "rect": [8, 4, 56, 52], "archetype": "adventure", "yaw": -25, "pitch": 10, "roll": 0,
+          "sliders": { "jawWidth": 0.4, "browRidge": 0.3, "age": 0 } }
+```
+
 - **Coordinates are target pixels**, not source pixels: scale what you see down
   to the canvas and write the result. Bounding boxes are `[x0, y0, x1, y1]`.
 - **Palette**: sample the panel — `reference op="sample_palette" path=… region=…`

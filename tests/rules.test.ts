@@ -2,7 +2,9 @@ import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import path from "node:path";
 import { compileGrid } from "../dist/lib/grid.js";
+import { readFileSync } from "node:fs";
 import { loadRuleTemplates, templateProblems } from "../scripts/rule-templates.ts";
+import { ARMATURE_TEMPLATES, armatureTemplate } from "../scripts/armature-templates.ts";
 
 const rulesDir = path.resolve(import.meta.dirname, "..", "rules");
 
@@ -32,4 +34,13 @@ test("template names are unique, so a rule can point at one unambiguously", () =
     seen.set(t.name, `${t.file}:${t.line}`);
   }
   assert.deepEqual(clashes, []);
+});
+
+test("the armature templates in rules 32 are exactly what headArmature draws today", () => {
+  // They are generated, not drawn: if the model changes, regenerate them with
+  // `node --experimental-strip-types scripts/armature-templates.ts`.
+  const rule = readFileSync(path.join(rulesDir, "32-heads-and-faces.md"), "utf8");
+  for (const spec of ARMATURE_TEMPLATES) {
+    assert.ok(rule.includes(armatureTemplate(spec)), `${spec.name} is stale or missing in rules/32-heads-and-faces.md`);
+  }
 });
