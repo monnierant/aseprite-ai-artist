@@ -406,3 +406,42 @@ test("the headArmature op closes the masses with a selective outline", () => {
   const { raster: study } = buildHeadArmature({ rect: { x: 0, y: 0, width: 96, height: 96 }, archetype: "adventure", ramp, values: "planes" });
   assert.ok(!study.planes.some((p) => p.rampIndex === 0 && p.y < 40), "the outline leaks into the plane study");
 });
+
+test("a hair block rises above the shell, stops at the hairline and keeps the lips open", () => {
+  const ramp = ["#3b2027", "#7a4040", "#b8705a", "#e0a07a", "#f6d2b0"];
+  const hairRamp = ["#2b2f36", "#5b6470", "#8c96a3", "#bcc5cf", "#e6ebf0"];
+  for (const h of [48, 96]) {
+    const base = buildHeadArmature({ rect: { x: 0, y: 0, width: h, height: h }, archetype: "realistic", yaw: -25, ramp, values: "masses" });
+    const { raster, armature } = buildHeadArmature({ rect: { x: 0, y: 0, width: h, height: h }, archetype: "realistic", yaw: -25, ramp, values: "masses", hairBlock: { ramp: hairRamp, beard: true } });
+    assert.equal(base.raster.hair.length, 0, "no hair block unless asked");
+    const shellTop = Math.min(...armature.hairShell.map((p) => p[1]));
+    const hairTop = Math.min(...raster.hair.map((p) => p.y));
+    assert.ok(hairTop <= shellTop - 1, `${h} px: the hair is a cap on the shell (top ${hairTop} vs shell ${shellTop})`);
+    const tops = new Set<number>();
+    for (const x of new Set(raster.hair.map((p) => p.x))) tops.add(Math.min(...raster.hair.filter((p) => p.x === x).map((p) => p.y)));
+    assert.ok(tops.size >= 3, `${h} px: a smooth hair top (${tops.size} distinct heights)`);
+    const hair = new Set(raster.hair.map((p) => `${p.x},${p.y}`));
+    for (const e of armature.eyes.filter((e) => e.visible)) {
+      assert.ok(!hair.has(`${Math.round(e.center[0])},${Math.round(e.center[1])}`), `${h} px: hair over the ${e.side} eye`);
+    }
+    const mouth = armature.landmarks.mouth;
+    const covered = mouth.filter(([x, y]) => hair.has(`${x},${y}`)).length;
+    assert.ok(covered <= mouth.length * 0.1, `${h} px: the beard closes the mouth (${covered}/${mouth.length})`);
+    const chin = armature.landmarks.chin ?? [0, h];
+    const below = raster.hair.filter((p) => p.y > Math.max(...base.raster.planes.filter((q) => q.x === p.x && q.y < chin[1] + 4).map((q) => q.y), -1));
+    assert.ok(below.length > 0, `${h} px: the beard does not grow the jaw silhouette`);
+  }
+});
+
+test("the headArmature op paints the hair block on its own layer above the skin", () => {
+  const op = headArmatureOp.parse({
+    kind: "headArmature", rect: { x: 0, y: 0, width: 64, height: 64 },
+    planes: { ramp: ["#3b2027", "#7a4040", "#b8705a", "#e0a07a", "#f6d2b0"] },
+    hairBlock: { ramp: ["#2b2f36", "#5b6470", "#8c96a3", "#bcc5cf", "#e6ebf0"] },
+  });
+  const { passes } = compileHeadArmature(op);
+  const layers = passes.map((p) => p.layer);
+  assert.deepEqual(layers, ["head-planes", "hair-block", "guide"]);
+  const hairColors = new Set(JSON.stringify(passes[1]!.ops).match(/#[0-9a-f]{6}/gi));
+  assert.ok([...hairColors].every((c) => op.hairBlock!.ramp.includes(c)), "hair block paints off its ramp");
+});

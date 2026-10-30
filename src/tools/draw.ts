@@ -73,6 +73,14 @@ export const headArmatureOp = z.object({
     })
     .optional()
     .describe("When set, every visible plane is filled with the ramp colour of its lit value."),
+  hairBlock: z
+    .object({
+      ramp: z.array(hexColor).min(2).max(8).describe("Hair ramp, darkest to lightest."),
+      layer: z.string().default("hair-block").describe("Layer for the hair block-in; created when missing, above the skin block-in."),
+      beard: z.boolean().default(false).describe("Also block in a beard on the jaw, chin and upper lip planes, grown below the jaw."),
+    })
+    .optional()
+    .describe("Hair (and beard) block-in: a mass rising 1–3 px above the shell in clumps, locks across the hairline, three lit values, a sheen and an outline against the backdrop. Paint strands and a parting over it."),
 });
 
 /**
@@ -238,6 +246,7 @@ export function compileHeadArmature(op: HeadArmatureOp, palette: readonly string
     sliders: op.sliders, hair: op.hair, neck: op.neck,
     light: op.planes?.light, ramp: op.planes?.ramp, values: op.planes?.values ?? "masses",
     outline: op.planes?.outline ?? (op.planes?.values ?? "masses") === "masses",
+    hairBlock: op.hairBlock ? { ramp: op.hairBlock.ramp, beard: op.hairBlock.beard } : undefined,
   });
   const picks = contrastingColors(palette, op.planes?.ramp ?? []);
   const guideColor = op.guideColor ?? picks[0] ?? "#2a6fdb";
@@ -253,6 +262,17 @@ export function compileHeadArmature(op: HeadArmatureOp, palette: readonly string
     }
     const ops = [...byIndex.entries()].sort((a, b) => a[0] - b[0]).flatMap(([i, pts]) => pixelOps(pts, ramp[i]!));
     passes.push({ layer: op.planes.layer, create: true, ops });
+  }
+  if (op.hairBlock && raster.hair.length) {
+    const ramp = op.hairBlock.ramp;
+    const byIndex = new Map<number, Point[]>();
+    for (const p of raster.hair) {
+      const list = byIndex.get(p.rampIndex) ?? [];
+      list.push([p.x, p.y]);
+      byIndex.set(p.rampIndex, list);
+    }
+    const ops = [...byIndex.entries()].sort((a, b) => a[0] - b[0]).flatMap(([i, pts]) => pixelOps(pts, ramp[i]!));
+    passes.push({ layer: op.hairBlock.layer, create: true, ops });
   }
   passes.push({
     layer: op.guideLayer,
@@ -290,6 +310,7 @@ async function drawHeadArmature(
       data,
       `Head armature, level ${armature.level} (${armature.planes.length} planes), ${op.archetype} yaw ${op.yaw}° pitch ${op.pitch}° roll ${op.roll}°: guide on '${op.guideLayer}' (${guideColor} structure, ${featureColor} features)` +
         (op.planes ? `, block-in on '${op.planes.layer}'` : "") +
+        (op.hairBlock ? `, hair${op.hairBlock.beard ? " and beard" : ""} on '${op.hairBlock.layer}'` : "") +
         `. Visible eyes: ${eyes || "none"}. One Ctrl+Z undoes it. Paint the features on a new layer over the guide, then hide or delete the guide; look before moving on.`,
     );
   } catch (err) {

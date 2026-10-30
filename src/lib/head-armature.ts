@@ -50,6 +50,12 @@ export interface ArmatureInput {
    * its open bottom edge (the collar covers it). Default false.
    */
   outline?: boolean;
+  /**
+   * Hair (and optional beard) block-in over the shell: a mass that rises
+   * above the shell with a broken edge, three lit values from `ramp` and a
+   * selective outline. The skin under it keeps its masses.
+   */
+  hairBlock?: { ramp: readonly string[]; beard?: boolean };
 }
 
 export interface ArmatureEye {
@@ -106,6 +112,8 @@ export interface RasterLayers {
   features: Point[];
   /** Pixel → ramp index for the plane block-in (head, ears, neck). */
   planes: { x: number; y: number; rampIndex: number }[];
+  /** Pixel → hair ramp index for the hair (and beard) block-in; empty without `hairBlock`. */
+  hair: { x: number; y: number; rampIndex: number }[];
 }
 
 export class ArmatureError extends Error {
@@ -1203,6 +1211,57 @@ export function buildHeadArmature(input: ArmatureInput): ArmatureResult {
     planePixels.push({ x, y, rampIndex });
   }
 
+  const hairPixels: RasterLayers["hair"] = [];
+  if (input.hairBlock && input.hairBlock.ramp.length >= 2) {
+    const typeAt = (k: number) => acc.get(pixelInstance.get(k) ?? "")?.type;
+    const mouthY = mouth.length ? mouth.reduce((s, p) => s + p[1], 0) / mouth.length : rect.y + rect.height * 0.75;
+    const noseY = noseBase ? pix(noseBase)[1] : mouthY - rect.height * 0.08;
+    const beard = new Set<number>();
+    if (input.hairBlock.beard) {
+      // A beard grows on the jaw, chin and upper lip — never on the
+      // cheekbone, and the lips stay open.
+      const gap = Math.max(2, mouthY - noseY);
+      const mouthX0 = Math.min(...mouth.map((p) => p[0])), mouthX1 = Math.max(...mouth.map((p) => p[0]));
+      const lips = new Set<number>();
+      for (const [x, y] of mouth) for (let d = -1; d <= 1; d++) lips.add(key(x, y + d));
+      for (const [k] of pixelInstance) {
+        const t = typeAt(k); const [, y] = unkey(k);
+        if (lips.has(k)) continue;
+        // Coarser levels merge planes (jaw, cheek, side): same rule by height.
+        const [x] = unkey(k);
+        const overMouth = x >= mouthX0 - 1 && x <= mouthX1 + 1;
+        // The moustache is left to the painter: as a block it floats.
+        if (t === "chin" || t === "under") beard.add(k);
+        else if ((t === "jaw" || t === "cheekSide" || t === "cheek" || t === "side") && y >= noseY + gap * 0.5) beard.add(k);
+        else if ((t === "cheekFront" || t === "muzzle" || t === "front") && y >= mouthY + 2 && (overMouth || t !== "front")) beard.add(k);
+      }
+    }
+    // The shell is a whole-hemisphere projection: keep only what is not
+    // hidden behind the face — over skin, hair stops at the hairline.
+    const hl = new Map<number, number>();
+    for (const [x, y] of curve(hairlinePts, 0.02)) hl.set(x, Math.max(hl.get(x) ?? y, y));
+    // Fill the columns the curve skips, or the fringe comes out striped.
+    const hx = [...hl.keys()].sort((a, b) => a - b);
+    for (let n = 1; n < hx.length; n++) {
+      const a = hx[n - 1]!, b = hx[n]!;
+      for (let x = a + 1; x < b; x++) hl.set(x, Math.round(lerp(hl.get(a)!, hl.get(b)!, (x - a) / (b - a))));
+    }
+    const visibleShell = new Set<number>();
+    for (const k of shellMask) {
+      const [x, y] = unkey(k);
+      if (!pixelInstance.has(k)) { visibleShell.add(k); continue; }
+      const t = typeAt(k);
+      if (t === "ear" || t === "neck") continue;
+      const line = hl.get(x);
+      if (line !== undefined ? y <= line : t === "top" || t === "back" || t === "temple") visibleShell.add(k);
+    }
+    const hairBlockMask = buildHairBlock(visibleShell, beard, pixelInstance, rect, key, unkey);
+    for (const [k, idx] of shadeHairBlock(hairBlockMask, beard, lightVec, input.hairBlock.ramp.length, pixelInstance, key, unkey)) {
+      const [x, y] = unkey(k);
+      hairPixels.push({ x, y, rampIndex: idx });
+    }
+  }
+
   const uniq = (pts: Point[]) => {
     const seen = new Set<number>();
     return pts.filter(([x, y]) => { const k = key(x, y); if (seen.has(k)) return false; seen.add(k); return true; });
@@ -1222,5 +1281,129 @@ export function buildHeadArmature(input: ArmatureInput): ArmatureResult {
     },
     eyes, planes, ears, hairShell, neck, rhythm,
   };
-  return { armature, raster: { structure: uniq(structure), features: uniq(features), planes: planePixels } };
+  return { armature, raster: { structure: uniq(structure), features: uniq(features), planes: planePixels, hair: hairPixels } };
+}
+
+/**
+ * A hair mass is not the shell: it rises 1–3 px above it in clumps, sends
+ * locks across the hairline and, with a beard, grows the jaw silhouette down
+ * by the same amount. Deterministic: the clump pattern comes from the column.
+ */
+function buildHairBlock(
+  shell: Set<number>,
+  beard: Set<number>,
+  skin: Map<number, string>,
+  rect: { x: number; y: number; width: number; height: number },
+  key: (x: number, y: number) => number,
+  unkey: (k: number) => [number, number],
+): Set<number> {
+  const mass = new Set<number>([...shell, ...beard]);
+  if (mass.size === 0) return mass;
+  const lift = Math.max(1, Math.min(3, Math.round(rect.height / 32)));
+  const clump = Math.max(3, Math.round(rect.height / 12));
+  const cols = new Map<number, { top: number; bottom: number }>();
+  for (const k of shell) {
+    const [x, y] = unkey(k);
+    const c = cols.get(x) ?? { top: y, bottom: y };
+    c.top = Math.min(c.top, y); c.bottom = Math.max(c.bottom, y);
+    cols.set(x, c);
+  }
+  const xs = [...cols.keys()].sort((a, b) => a - b);
+  const x0 = xs[0] ?? 0;
+  for (const x of xs) {
+    const phase = (x - x0) % clump, mid = Math.floor(clump / 2);
+    // Clumps: full lift at the clump centre, one less at its edges.
+    const up = phase === 0 ? Math.max(0, lift - 1) : Math.abs(phase - mid) <= 1 ? lift : Math.max(1, lift - 1);
+    const top = cols.get(x)!.top;
+    for (let d = 1; d <= up; d++) mass.add(key(x, top - d));
+  }
+  // Locks across the hairline: where hair meets skin, every clump centre
+  // drops 1–2 px onto the forehead.
+  for (const k of [...shell]) {
+    const [x, y] = unkey(k);
+    if (shell.has(key(x, y + 1)) || !skin.has(key(x, y + 1))) continue;
+    const phase = (x - x0) % clump;
+    const mid = Math.floor(clump / 2);
+    if (phase === mid) {
+      mass.add(key(x, y + 1));
+      if (lift >= 2) mass.add(key(x, y + 2));
+    } else if (Math.abs(phase - mid) === 1 && lift >= 2) {
+      mass.add(key(x, y + 1));
+    }
+  }
+  // Beard volume: grow the lowest beard pixel of every column down in clumps,
+  // and break its top edge so it never reads as a strap.
+  if (beard.size) {
+    const high = new Map<number, number>();
+    for (const k of beard) { const [x, y] = unkey(k); high.set(x, Math.min(high.get(x) ?? y, y)); }
+    for (const [x, y] of high) {
+      const phase = (x - x0) % clump, mid = Math.floor(clump / 2);
+      if (phase === 0) mass.delete(key(x, y));
+      else if (phase === mid && skin.has(key(x, y - 1))) mass.add(key(x, y - 1));
+    }
+    const low = new Map<number, number>();
+    for (const k of beard) { const [x, y] = unkey(k); low.set(x, Math.max(low.get(x) ?? y, y)); }
+    for (const [x, y] of low) {
+      const phase = (x - x0) % clump;
+      const down = Math.abs(phase - Math.floor(clump / 2)) <= 1 ? lift : Math.max(0, lift - 1);
+      for (let d = 1; d <= down; d++) mass.add(key(x, y + d));
+    }
+  }
+  return mass;
+}
+
+/** Three lit values on a fitted ellipsoid, a sheen band, a selective outline. */
+function shadeHairBlock(
+  mass: Set<number>,
+  beard: Set<number>,
+  lightVec: Vector3,
+  steps: number,
+  skin: Map<number, string>,
+  key: (x: number, y: number) => number,
+  unkey: (k: number) => [number, number],
+): Map<number, number> {
+  const out = new Map<number, number>();
+  if (mass.size === 0) return out;
+  // Hair and beard are two volumes: each gets its own fitted ellipsoid. A
+  // beard pixel is one of the jaw's, or grown below it.
+  let beardTop = Infinity;
+  for (const k of beard) beardTop = Math.min(beardTop, unkey(k)[1]);
+  const inBeard = (k: number) => beard.size > 0 && (beard.has(k) || unkey(k)[1] > beardTop + 2) ;
+  const fit = (pick: (k: number) => boolean) => {
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (const k of mass) { if (!pick(k)) continue; const [x, y] = unkey(k); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, rx: Math.max(1, (x1 - x0) / 2), ry: Math.max(1, (y1 - y0) / 2) };
+  };
+  const hairFit = fit((k) => !inBeard(k)), beardFit = fit(inBeard);
+  const at = (t: number) => Math.max(0, Math.min(steps - 1, Math.round(t * (steps - 1))));
+  const dark = steps >= 4 ? 1 : 0;
+  for (const k of mass) {
+    const [x, y] = unkey(k);
+    const { cx, cy, rx, ry } = inBeard(k) ? beardFit : hairFit;
+    const nx = (x - cx) / rx, ny = (y - cy) / ry;
+    // The lower edge of a hair mass faces the viewer, not the floor: clamp
+    // the downward tilt so the fringe stays a mid value instead of a band.
+    const tilt = Math.min(ny, 0.3);
+    const n = norm(v(nx, tilt, Math.sqrt(Math.max(0.05, 1 - nx * nx - tilt * tilt))));
+    const l = (Math.max(0, dot(n, lightVec)) + 0.3) / 1.3;
+    // Sheen is a band across the lit crown, not a spot: a spot reads bald.
+    const rr = Math.hypot(nx, ny);
+    const sheen = l >= 0.8 && ny < -0.15 && rr >= 0.5 && rr <= 0.5 + Math.max(0.12, 2 / ry) && (x * 7 + y * 3) % 5 !== 0;
+    const idx = sheen ? steps - 1 : l >= 0.72 ? at(0.7) : l >= 0.45 ? at(0.45) : Math.max(dark, at(0.2));
+    out.set(k, idx);
+  }
+  // Outline against the backdrop only: where hair meets skin the edge is a
+  // colour change, never a line.
+  for (const k of mass) {
+    const [x, y] = unkey(k);
+    let ox = 0, oy = 0, open = false;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+      const nk = key(x + dx, y + dy);
+      if (mass.has(nk) || skin.has(nk)) continue;
+      open = true; ox += dx; oy += dy;
+    }
+    if (!open) continue;
+    out.set(k, ox * lightVec.x + 0.5 * oy * lightVec.y > 0 ? Math.min(dark, steps - 1) : 0);
+  }
+  return out;
 }
