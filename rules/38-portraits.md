@@ -57,7 +57,9 @@ recipes: `rules://33-eyes-and-expressions`.
    A beard is a mass on the jaw planes that extends the chin silhouette, with a broken
    edge on the cheek; never a band along the jaw line. From 28 px, start both from the
    armature's `hairBlock` (`beard: true` for the beard) rather than painting the mass by
-   hand, then add the part, strands, fringe and style silhouette on top. Flat mass first, then flow lines from the part or cowlick, 3–4 tones with the
+   hand, then add the part, strands, fringe and style silhouette on top. Not for
+   `anime`/`chibi`: their hair is a few large flat locks with pointed tips, its clumped
+   top reads as spikes. Flat mass first, then flow lines from the part or cowlick, 3–4 tones with the
    highlight band following the skull curve and the lightest tone on top; strands ≥2 px wide;
    the hairline is a colour edge, not an outline (`rules://35-hair-and-clothing`).
 8. **Eyes.** 7×5 at 48 px, 11×6 at 64 — the armature's `footprint` already has this size,

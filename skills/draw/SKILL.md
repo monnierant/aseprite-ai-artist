@@ -66,7 +66,9 @@ them, never a second set of shadow polygons. Unless the head is bald or
 covered (hood, helmet), pass `hairBlock` with the hair ramp (`beard:true` for a
 beard): it blocks in a hair mass rising above the shell in clumps, locks across
 the hairline, a lit crown and an outline on a `hair-block` layer — the same
-role the masses play for the skin. Keep it, then paint the parting, strands
+role the masses play for the skin (`realistic`/`adventure` only: for
+`anime`/`chibi` leave it out and paint the hair as a few large flat locks with
+pointed tips). Keep it, then paint the parting, strands
 and the hairstyle's own silhouette (fringe, bun, long locks) over and beyond
 it; a moustache is painted by hand. Then draw
 the rest of the figure (step 2) and paint the head on its own layer over the
